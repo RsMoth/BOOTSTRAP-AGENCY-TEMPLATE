@@ -166,3 +166,86 @@ where "null" represents the device list.  The following example restricts the pr
 /usr/bin/ld: ios_webkit_debug_proxy-char_buffer.o: undefined reference to symbol 'log10@@GLIBC_2.2.5'
 //lib/x86_64-linux-gnu/libm.so.6: error adding symbols: DSO missing from command line
 ```
+
+Run this before `make`: `./configure LIBS="-lm"`
+
+##### error while loading shared libraries: libimobiledevice.so.6
+```console
+ios_webkit_debug_proxy: error while loading shared libraries: libimobiledevice.so.6: cannot open shared object file: No such file or directory
+```
+
+Run `sudo ldconfig`
+
+##### ssl sendq retry failed: Undefined error: 0
+
+should only happen with versions > 1.8.5, make sure ios-webkit-debug-proxy is built with same version of libssl that libimobildevice was built with
+
+##### idevice_id not found
+
+The `idevice_id` executable may be found as part of the libimobiledevice-utils package.
+
+##### could not start com.apple.webinspector! success
+
+[Remove and rebuild libimobiledevice](https://github.com/google/ios-webkit-debug-proxy/issues/82#issuecomment-74205898).
+
+##### Could not connect to lockdownd (or doesn't work with iOS10+)
+> Could not connect to lockdownd. Exiting.: No such file or directory. Unable to attach <long id> inspector ios_webkit_debug_proxy
+
+Check the device for [a prompt to trust the connected computer](http://i.stack.imgur.com/hPaqX.png). Choose "Trust" and try again.
+
+> Could not connect to lockdownd. Exiting.: Broken pipe. Unable to attach <long id> inspector
+
+or
+
+> Could not connect to lockdownd, error code -\<number\>. Exiting.
+
+Make sure you're using latest version of ios-webkit-debug-proxy
+
+##### Inspectable pages list is empty for iOS >= 12.2
+
+Make sure you're using latest version of ios-webkit-debug-proxy
+
+##### Can not see Simulator
+
+  - Make sure you started simulator before the proxy
+  - Check that webinspector switch is enabled (Settings -> Safari -> Advanced -> Web Inspector)
+  - Most likely simulator's web inspector daemon listens on ipv6 interface, check that you have `::1 localhost` line in `/etc/hosts`
+
+##### Building under Rosetta (OS X)
+
+libimobildevice formulae [depends on](https://github.com/Homebrew/homebrew-core/blob/d6c416caf0622f2aac47742bca679c3510d0b1d9/Formula/libimobiledevice.rb#L30) openssl@1.1, which is key-only and requires the following env paths for the build
+
+```console
+export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"
+export LDFLAGS="-L/usr/local/opt/openssl@1.1/lib"
+export CPPFLAGS="-I/usr/local/opt/openssl@1.1/include"
+```
+
+##### If no luck so far...
+Lastly, always try replugging in the USB cable.
+
+
+## IWDP Clients
+
+JSON-formatted APIs are provided for programmatic clients.
+  * <http://localhost:9221/json> will list all devices
+  * <http://localhost:9222/json> to list device ":9222"'s tabs
+  * [ws://localhost:9222/devtools/page/1]() to inspect a tab.
+
+See the [examples/README](examples/README.md) for example clients: NodeJS, C, clientside JS, websocket and more.
+
+## Design
+
+![Alt overview](overview.png "Overview")
+
+View the [design document](design.md) for an overview of the source layout and architecture.
+
+## License and Copyright
+
+Google BSD license <https://developers.google.com/google-bsd-license>
+Copyright 2012 Google Inc.  <wrightt@google.com>
+
+The proxy uses the following open-source packages:
+   - [libplist 2.2.0](http://cgit.sukimashita.com/libplist.git)
+   - [libusbmuxd 2.0.0](http://cgit.sukimashita.com/usbmuxd.git/)
+   - [libimobiledevice 1.3.0](http://cgit.sukimashita.com/libimobiledevice.git)
