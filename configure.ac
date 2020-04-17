@@ -4,4 +4,4 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([
+AC_INIT([ios_webkit_debug_proxy], [1.8.8], [https://github.com/google/ios-webkit-debug-proxy/issue
