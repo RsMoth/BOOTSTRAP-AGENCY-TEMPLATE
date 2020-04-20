@@ -7,4 +7,10 @@ AC_PREREQ([2.63])
 AC_INIT([ios_webkit_debug_proxy], [1.8.8], [https://github.com/google/ios-webkit-debug-proxy/issues])
 AM_INIT_AUTOMAKE([1.10 no-define])
 AC_CONFIG_SRCDIR([src/])
-AC_CONFIG_HEAD
+AC_CONFIG_HEADERS([config.h])
+
+# Checks for programs.
+AC_PROG_CC
+AM_PROG_CC_C_O
+AC_PROG_INSTALL
+PKG_PROG
