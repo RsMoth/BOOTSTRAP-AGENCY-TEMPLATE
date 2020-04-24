@@ -24,4 +24,5 @@ AC_CHECK_LIB([plist-2.0], [plist_to_xml],
              [$libplist_LIBS])
 AC_CHECK_LIB([m], [log10])
 AC_CHECK_LIB([imobiledevice-1.0], [idevice_new],
-            
+             [ ], [AC_MSG_FAILURE([*** Unable to link with libimobiledevice])],
+             [$libimo
