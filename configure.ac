@@ -35,4 +35,7 @@ libplist_version=`$PKG_CONFIG --modversion libplist-2.0`
 AC_DEFINE_UNQUOTED([LIBIMOBILEDEVICE_VERSION], ["$libimobiledevice_version"], [ ])
 AC_DEFINE_UNQUOTED([LIBPLIST_VERSION], ["$libplist_version"], [ ])
 
-# Checks for head
+# Checks for header files.
+AC_HEADER_STDC
+AC_HEADER_RESOLV
+AC_CHECK_HEADERS([arpa/inet.h inttypes.h netd
