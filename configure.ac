@@ -30,4 +30,6 @@ LT_INIT
 
 # Defines versions of required modules
 libimobiledevice_version=`$PKG_CONFIG --modversion libimobiledevice-1.0`
-libplist_version=`$PKG_CONFIG --modversion libp
+libplist_version=`$PKG_CONFIG --modversion libplist-2.0`
+
+AC_DEFINE_UNQUOTED([LIBIMOBILEDEVICE_VERSION], ["$libimobiledevice_version
