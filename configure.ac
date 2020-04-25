@@ -29,4 +29,5 @@ AC_CHECK_LIB([imobiledevice-1.0], [idevice_new],
 LT_INIT
 
 # Defines versions of required modules
-libimobiledevice_version
+libimobiledevice_version=`$PKG_CONFIG --modversion libimobiledevice-1.0`
+libplist_version=`$PKG_CONFIG --modversion libp
