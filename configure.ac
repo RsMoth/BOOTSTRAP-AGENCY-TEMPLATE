@@ -38,4 +38,5 @@ AC_DEFINE_UNQUOTED([LIBPLIST_VERSION], ["$libplist_version"], [ ])
 # Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_RESOLV
-AC_CHECK_HEADERS([arpa/inet.h inttypes.h netd
+AC_CHECK_HEADERS([arpa/inet.h inttypes.h netdb.h netinet/in.h stddef.h stdint.h stdlib.h string.h sys/socket.h sys/time.h])
+
