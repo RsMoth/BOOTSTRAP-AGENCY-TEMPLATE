@@ -40,3 +40,7 @@ AC_HEADER_STDC
 AC_HEADER_RESOLV
 AC_CHECK_HEADERS([arpa/inet.h inttypes.h netdb.h netinet/in.h stddef.h stdint.h stdlib.h string.h sys/socket.h sys/time.h])
 
+# Checks for typedefs, structures, and compiler characteristics.
+AC_TYPE_INT8_T
+AC_TYPE_SIZE_T
+AC_
