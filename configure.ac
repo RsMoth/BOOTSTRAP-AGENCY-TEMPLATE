@@ -43,4 +43,8 @@ AC_CHECK_HEADERS([arpa/inet.h inttypes.h netdb.h netinet/in.h stddef.h stdint.h 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_INT8_T
 AC_TYPE_SIZE_T
-AC_
+AC_TYPE_SSIZE_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
+AC_TYPE_UINT8_T
