@@ -56,4 +56,7 @@ AC_FUNC_REALLOC
 # Check for operating system
 AC_MSG_CHECKING([whether to enable WIN32 build settings])
 case ${host_os} in
-  *mingw*
+  *mingw*|*msys*|*cygwin*)
+    win32=true
+    AC_MSG_RESULT([yes])
+    AC_DEFINE(WIN3
