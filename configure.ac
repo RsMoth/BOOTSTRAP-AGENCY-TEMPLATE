@@ -59,4 +59,5 @@ case ${host_os} in
   *mingw*|*msys*|*cygwin*)
     win32=true
     AC_MSG_RESULT([yes])
-    AC_DEFINE(WIN3
+    AC_DEFINE(WIN32_LEAN_AND_MEAN, 1, [Define to limit the scope of windows.h])
+    AC_DEFI
