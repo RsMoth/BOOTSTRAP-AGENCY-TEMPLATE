@@ -60,4 +60,6 @@ case ${host_os} in
     win32=true
     AC_MSG_RESULT([yes])
     AC_DEFINE(WIN32_LEAN_AND_MEAN, 1, [Define to limit the scope of windows.h])
-    AC_DEFI
+    AC_DEFINE(__USE_MINGW_ANSI_STDIO, 1, [Define to use C99 printf/snprintf in MinGW])
+    ;;
+  *
