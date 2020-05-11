@@ -67,4 +67,7 @@ case ${host_os} in
     AC_MSG_RESULT([no])
     ;;
 esac
-AM_CONDITIONAL(WIN32, test "x$win
+AM_CONDITIONAL(WIN32, test "x$win32" = "xtrue")
+
+# Check for pcre presence if regex.h is absent
+AC_CHECK_HEADER(regex.h, [ac_hav
