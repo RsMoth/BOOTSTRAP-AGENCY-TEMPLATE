@@ -70,4 +70,6 @@ esac
 AM_CONDITIONAL(WIN32, test "x$win32" = "xtrue")
 
 # Check for pcre presence if regex.h is absent
-AC_CHECK_HEADER(regex.h, [ac_hav
+AC_CHECK_HEADER(regex.h, [ac_have_regex_h="yes"], [ac_have_regex_h="no"])
+if test "x$ac_have_regex_h" = "xno"; then
+  PKG_CHE
