@@ -72,4 +72,9 @@ AM_CONDITIONAL(WIN32, test "x$win32" = "xtrue")
 # Check for pcre presence if regex.h is absent
 AC_CHECK_HEADER(regex.h, [ac_have_regex_h="yes"], [ac_have_regex_h="no"])
 if test "x$ac_have_regex_h" = "xno"; then
-  PKG_CHECK_MODULES(libpcreposix, libpcreposix, [], [AC_MSG_ERROR([Neither regex.h nor pcre headers were found]
+  PKG_CHECK_MODULES(libpcreposix, libpcreposix, [], [AC_MSG_ERROR([Neither regex.h nor pcre headers were found])])
+else
+  AC_DEFINE(HAVE_REGEX_H, 1, [regex.h is present])
+fi
+
+AC_CHECK_FUNCS([memmove memset 
