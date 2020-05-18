@@ -77,4 +77,4 @@ else
   AC_DEFINE(HAVE_REGEX_H, 1, [regex.h is present])
 fi
 
-AC_CHECK_FUNCS([memmove memset 
+AC_CHECK_FUNCS([memmove memset regcomp select socket strcasecmp strncasecmp strchr strdup strndup strrchr strstr st
