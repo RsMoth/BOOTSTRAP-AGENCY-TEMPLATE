@@ -79,4 +79,8 @@ fi
 
 AC_CHECK_FUNCS([memmove memset regcomp select socket strcasecmp strncasecmp strchr strdup strndup strrchr strstr strtol strcasestr getline])
 
-AC_CONFIG_FILES([Makefile src/Makefile include/Makefile exa
+AC_CONFIG_FILES([Makefile src/Makefile include/Makefile examples/Makefile])
+
+CFLAGS="${CFLAGS} -Wall -Werror"
+
+AC_OUTPUT
