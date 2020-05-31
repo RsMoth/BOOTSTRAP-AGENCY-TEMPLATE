@@ -10,4 +10,7 @@ See the [README.md](README.md) for an overview.
 Source
 ------
 
-- [src/ios_webkit_debug_proxy_main.c](src/ios_webkit_debug_proxy_m
+- [src/ios_webkit_debug_proxy_main.c](src/ios_webkit_debug_proxy_main.c)   
+   \- The "main"   
+
+- [src/ios_webkit_debug_proxy.c](src/ios_webkit_de
