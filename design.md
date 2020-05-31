@@ -13,4 +13,6 @@ Source
 - [src/ios_webkit_debug_proxy_main.c](src/ios_webkit_debug_proxy_main.c)   
    \- The "main"   
 
-- [src/ios_webkit_debug_proxy.c](src/ios_webkit_de
+- [src/ios_webkit_debug_proxy.c](src/ios_webkit_debug_proxy.c)    
+   \- WebInspector to WebKit Remote Debugging Protocol translator   
+   \- See [e
