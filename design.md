@@ -15,4 +15,6 @@ Source
 
 - [src/ios_webkit_debug_proxy.c](src/ios_webkit_debug_proxy.c)    
    \- WebInspector to WebKit Remote Debugging Protocol translator   
-   \- See [e
+   \- See [examples/wdp_client.js](examples/wdp_client.js) and <http://localhost:9221>   
+
+- [src/webinspector.c](src/w
