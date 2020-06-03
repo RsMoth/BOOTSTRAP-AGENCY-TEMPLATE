@@ -24,4 +24,7 @@ Source
 
 - [src/device_listener.c](src/device_listener.c)   
    \- iOS device add/remove listener   
-   \- See [examp
+   \- See [examples/dl_client.c](examples/dl_client.c)   
+
+- [src/websocket.c](src/websocket.c)   
+   
