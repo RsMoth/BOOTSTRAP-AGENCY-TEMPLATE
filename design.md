@@ -19,4 +19,7 @@ Source
 
 - [src/webinspector.c](src/webinspector.c)   
    \- iOS WebInspector library   
-   \- See [examples/wi_client.c](exampl
+   \- See [examples/wi_client.c](examples/wi_client.c)
+   \- See [src/rpc.c](src/rpc.c) parser
+
+- [src/device_listener.c](
