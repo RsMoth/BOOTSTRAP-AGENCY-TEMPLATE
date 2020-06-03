@@ -27,4 +27,5 @@ Source
    \- See [examples/dl_client.c](examples/dl_client.c)   
 
 - [src/websocket.c](src/websocket.c)   
-   
+   \- A generic WebSocket library   
+   \- Uses base64.c and sha1.c from [PolarSSL](http://www.polarssl.org)  
