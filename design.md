@@ -22,4 +22,6 @@ Source
    \- See [examples/wi_client.c](examples/wi_client.c)
    \- See [src/rpc.c](src/rpc.c) parser
 
-- [src/device_listener.c](
+- [src/device_listener.c](src/device_listener.c)   
+   \- iOS device add/remove listener   
+   \- See [examp
