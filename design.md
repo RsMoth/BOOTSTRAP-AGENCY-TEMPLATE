@@ -28,4 +28,5 @@ Source
 
 - [src/websocket.c](src/websocket.c)   
    \- A generic WebSocket library   
-   \- Uses base64.c and sha1.c from [PolarSSL](http://www.polarssl.org)  
+   \- Uses base64.c and sha1.c from [PolarSSL](http://www.polarssl.org)   
+   \- See [examples/ws_echo1.c](examples/ws_echo1.c) and [examples/ws_echo2.c](exampl
