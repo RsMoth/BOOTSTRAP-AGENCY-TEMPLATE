@@ -32,4 +32,6 @@ Source
    \- See [examples/ws_echo1.c](examples/ws_echo1.c) and [examples/ws_echo2.c](examples/ws_echo2.c)
 
 - Utilities:   
-   \- [src/char_buffer.c](src/char_buffer.c) byte buffe
+   \- [src/char_buffer.c](src/char_buffer.c) byte buffer   
+   \- [src/hash_table.c](src/hash_table.c) dictionary   
+   \- [src/port_config.c](src/port_confi
