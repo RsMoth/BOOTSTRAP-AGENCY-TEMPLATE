@@ -42,3 +42,9 @@ Architecture
 ------------
 
 The high-level design is shown below:
+
+![Alt overview](overview.png "Overview")
+
+The various clients are shown below:
+
+![
