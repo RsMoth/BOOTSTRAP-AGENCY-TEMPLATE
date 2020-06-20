@@ -34,4 +34,5 @@ Source
 - Utilities:   
    \- [src/char_buffer.c](src/char_buffer.c) byte buffer   
    \- [src/hash_table.c](src/hash_table.c) dictionary   
-   \- [src/port_config.c](src/port_confi
+   \- [src/port_config.c](src/port_config.c) parses device_id:port config files   
+   \- [src/socket_manager.c](src/socket_manager.c
