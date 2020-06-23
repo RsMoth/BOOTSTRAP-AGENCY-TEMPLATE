@@ -47,4 +47,7 @@ The high-level design is shown below:
 
 The various clients are shown below:
 
-![
+![Alt clients](clients.png "Clients")
+
+
+The major components of the ios_webk
