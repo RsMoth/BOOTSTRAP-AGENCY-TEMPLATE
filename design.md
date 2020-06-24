@@ -52,4 +52,6 @@ The various clients are shown below:
 
 The major components of the ios_webkit_debug_proxy are:
 
-  1. A device_listener that listens for iOS device add/remove event
+  1. A device_listener that listens for iOS device add/remove events
+  1. A (port, webinspector) pair for each device, e.g.:   
+     - [(port 9222 <--> iphoneX'
