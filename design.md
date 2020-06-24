@@ -50,4 +50,6 @@ The various clients are shown below:
 ![Alt clients](clients.png "Clients")
 
 
-The major components of the ios_webk
+The major components of the ios_webkit_debug_proxy are:
+
+  1. A device_listener that listens for iOS device add/remove event
