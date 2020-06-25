@@ -57,4 +57,8 @@ The major components of the ios_webkit_debug_proxy are:
      - [(port 9222 <--> iphoneX's inspector),
      -  (port 9223 <--> iphoneY's inspector), ...]
   1. Zero or more active WebSocket clients, e.g.:
-     - [websocketA is connected to :9222/devtools/page/7, ..
+     - [websocketA is connected to :9222/devtools/page/7, ...]
+  1. A socket_manager that handles all the socket I/O
+
+
+The code is object-oriented via the use of structs and f
