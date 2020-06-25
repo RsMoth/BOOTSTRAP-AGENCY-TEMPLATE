@@ -61,4 +61,5 @@ The major components of the ios_webkit_debug_proxy are:
   1. A socket_manager that handles all the socket I/O
 
 
-The code is object-oriented via the use of structs and f
+The code is object-oriented via the use of structs and function pointers.
+For example, the device_listener struct defines two "public API
