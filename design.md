@@ -65,4 +65,8 @@ The code is object-oriented via the use of structs and function pointers.
 For example, the device_listener struct defines two "public API" functions:
 
     dl_status (*start)(dl_t self);
-    dl_status (*on_recv)(dl_t self, co
+    dl_status (*on_recv)(dl_t self, const char *buf, );
+
+and three "abstract" callback functions:
+
+    dl_status (*send)(dl_t
