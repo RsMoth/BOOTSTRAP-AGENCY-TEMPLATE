@@ -72,3 +72,9 @@ and three "abstract" callback functions:
     dl_status (*send)(dl_t self, const char *buf, size_t length);
     dl_status (*on_attach)(dl_t self, const char *device_id);
     dl_status (*on_detach)(dl_t self, const char *device_id);
+
+plus a field for client use:
+
+    void *state;
+
+For example, [examples/dl_client.c](examples/dl_client
