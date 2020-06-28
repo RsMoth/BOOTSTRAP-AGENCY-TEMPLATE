@@ -70,4 +70,5 @@ For example, the device_listener struct defines two "public API" functions:
 and three "abstract" callback functions:
 
     dl_status (*send)(dl_t self, const char *buf, size_t length);
-    dl_status (*on_attach)(dl_t self, cons
+    dl_status (*on_attach)(dl_t self, const char *device_id);
+    dl_status (*on_detach)(dl_t self, const char *device_id);
