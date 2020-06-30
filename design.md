@@ -77,4 +77,7 @@ plus a field for client use:
 
     void *state;
 
-For example, [examples/dl_client.c](examples/dl_client
+For example, [examples/dl_client.c](examples/dl_client.c) creates a listener and sets the missing callbacks:
+
+    int fd = dl_connect();
+    dl_
