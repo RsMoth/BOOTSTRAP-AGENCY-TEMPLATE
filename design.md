@@ -80,4 +80,5 @@ plus a field for client use:
 For example, [examples/dl_client.c](examples/dl_client.c) creates a listener and sets the missing callbacks:
 
     int fd = dl_connect();
-    dl_
+    dl_t dl = dl_new(); // sets the "start" and "on_recv" functions
+    
