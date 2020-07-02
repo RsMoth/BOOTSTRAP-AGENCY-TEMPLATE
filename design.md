@@ -82,4 +82,6 @@ For example, [examples/dl_client.c](examples/dl_client.c) creates a listener and
     int fd = dl_connect();
     dl_t dl = dl_new(); // sets the "start" and "on_recv" functions
     dl->state = fd;     // for use by "my_send"
-    dl->send = my_send; // --> send((int)dl->state, buf, le
+    dl->send = my_send; // --> send((int)dl->state, buf, length);
+    dl->on_attach = my_on_attach; // --> printf("%s", device_id);
+    dl->on_detach = my
