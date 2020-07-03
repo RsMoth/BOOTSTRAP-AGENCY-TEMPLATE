@@ -84,4 +84,10 @@ For example, [examples/dl_client.c](examples/dl_client.c) creates a listener and
     dl->state = fd;     // for use by "my_send"
     dl->send = my_send; // --> send((int)dl->state, buf, length);
     dl->on_attach = my_on_attach; // --> printf("%s", device_id);
-    dl->on_detach = my
+    dl->on_detach = my_on_detach; // --> ditto
+
+then does:
+
+    dl->start();
+
+Lastly, the client forward
