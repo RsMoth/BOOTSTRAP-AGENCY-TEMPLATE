@@ -90,4 +90,8 @@ then does:
 
     dl->start();
 
-Lastly, the client forward
+Lastly, the client forwards all socket input to the listener's "on_recv"
+handler:
+
+    char buf[1024];
+    wh
