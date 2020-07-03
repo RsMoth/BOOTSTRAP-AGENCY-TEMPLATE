@@ -94,4 +94,6 @@ Lastly, the client forwards all socket input to the listener's "on_recv"
 handler:
 
     char buf[1024];
-    wh
+    while (1) {
+       int len = recv(fd, buf, 1024);
+       if (dl->on_recv(dl, buf, len)) bre
