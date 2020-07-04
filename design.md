@@ -99,4 +99,8 @@ handler:
        if (dl->on_recv(dl, buf, len)) break;
     }
 
-where "on_recv" buffers the input and calls our "my_on_message" when it 
+where "on_recv" buffers the input and calls our "my_on_message" when it has a
+full message.
+
+Note that the "on_recv" and "send" functions abstract the I/O from the
+inter
