@@ -96,4 +96,7 @@ handler:
     char buf[1024];
     while (1) {
        int len = recv(fd, buf, 1024);
-       if (dl->on_recv(dl, buf, len)) bre
+       if (dl->on_recv(dl, buf, len)) break;
+    }
+
+where "on_recv" buffers the input and calls our "my_on_message" when it 
