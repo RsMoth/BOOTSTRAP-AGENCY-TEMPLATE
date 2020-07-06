@@ -110,4 +110,4 @@ The detailed design is shown below:
 
 ![Alt design](design.png "Design")
 
-Lines in red are controlled by the main "ios_webk
+Lines in red are controlled by the main "ios_webkit_debug_proxy".  For example, although the figure shows a direct red line from th
