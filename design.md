@@ -108,4 +108,6 @@ interface, which simplifies debugging and unit testing.
 
 The detailed design is shown below:
 
-!
+![Alt design](design.png "Design")
+
+Lines in red are controlled by the main "ios_webk
