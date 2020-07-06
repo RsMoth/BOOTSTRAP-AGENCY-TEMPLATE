@@ -103,4 +103,9 @@ where "on_recv" buffers the input and calls our "my_on_message" when it has a
 full message.
 
 Note that the "on_recv" and "send" functions abstract the I/O from the
-inter
+interface, which simplifies debugging and unit testing.
+
+
+The detailed design is shown below:
+
+!
