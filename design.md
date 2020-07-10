@@ -113,4 +113,4 @@ The detailed design is shown below:
 Lines in red are controlled by the main "ios_webkit_debug_proxy".  For example, although the figure shows a direct red line from the socket_manager's "on_recv" to the ios_webkit_debug_proxy's handler, this is implemented as a callback through ios_webkit_debug_proxy_main's "iwdpm_on_recv(...)".  This design isolate the components from one another and simplifies both offline and per-component unit testing.
 
 
-The code is single-threaded and uses non-blocking I/O.  
+The code is single-threaded and uses non-blocking I/O.  Instead of having a thread per socket that does blocking reads, the single  socket_manager's non
