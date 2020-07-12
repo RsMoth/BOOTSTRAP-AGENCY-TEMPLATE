@@ -5,4 +5,7 @@ Example Proxy Clients
 ---------------------
 
 - Browser HTML
-   \- <http://localhost:9221> supports HTML-formatted 
+   \- <http://localhost:9221> supports HTML-formatted list of devices, pages, and DevTools UI.
+
+- Browser JSON
+   \- <http://localhost:9221/json> supports 
