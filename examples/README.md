@@ -8,4 +8,7 @@ Example Proxy Clients
    \- <http://localhost:9221> supports HTML-formatted list of devices, pages, and DevTools UI.
 
 - Browser JSON
-   \- <http://localhost:9221/json> supports 
+   \- <http://localhost:9221/json> supports JSON-formatted output.
+
+- Browser JS
+   \- [wdp_client.html](wdp_client.html) demonstrates 
