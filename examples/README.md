@@ -23,4 +23,7 @@ Example Proxy Clients
 Example System Clients
 ----------------------
 
-- Device attach/re
+- Device attach/remove listener
+   \- [dl_client.c](dl_client.c)
+
+- WebSocket "echo" client (for ws_echo* testing)
