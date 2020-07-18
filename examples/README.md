@@ -27,3 +27,7 @@ Example System Clients
    \- [dl_client.c](dl_client.c)
 
 - WebSocket "echo" client (for ws_echo* testing)
+   \- [ws_client.html](ws_client.html)
+
+- WebSocket "echo" servers
+   \- [ws_echo1
