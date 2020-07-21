@@ -30,4 +30,5 @@ Example System Clients
    \- [ws_client.html](ws_client.html)
 
 - WebSocket "echo" servers
-   \- [ws_echo1
+   \- [ws_echo1.c](ws_echo1.c) uses blocking I/O
+   \- [ws_echo2.c](ws_echo2.c) uses non-blocking I/O
