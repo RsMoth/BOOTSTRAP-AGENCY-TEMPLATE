@@ -7,4 +7,6 @@ A minimal WebSocket client.
 <html><head><script type="text/javascript">
 function WebSocketTest() {
   if ("WebSocket" in window) {
-   
+    var ws = new WebSocket("ws://localhost:8080/");
+    var count = 3;
+    ws.onopen = fu
