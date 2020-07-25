@@ -151,3 +151,17 @@ int main(int argc, char **argv) {
   // cleanup
   free(my_wi->device_id);
   wi_free(my_wi->wi);
+  memset(my_wi, 0, sizeof(struct my_wi_struct));
+  free(my_wi);
+  if (fd >= 0) {
+#ifdef WIN32
+    closesocket(fd);
+#else
+    close(fd);
+#endif
+  }
+#ifdef WIN32
+  WSACleanup();
+#endif
+  return 0;
+}
