@@ -9,4 +9,8 @@ function WebSocketTest() {
   if ("WebSocket" in window) {
     var ws = new WebSocket("ws://localhost:8080/");
     var count = 3;
-    ws.onopen = fu
+    ws.onopen = function() {
+      alert("Sending "+count);
+      ws.send("count["+count+"]");
+    };
+ 
