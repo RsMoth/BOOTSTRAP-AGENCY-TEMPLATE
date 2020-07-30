@@ -17,4 +17,8 @@ function WebSocketTest() {
       alert("Received ("+evt.data+"), sending "+
            (count > 1 ? (count-1) : "close"));
       if (count > 1) {
-   
+        ws.send("count["+(--count)+"]");
+      } else {
+        ws.close();
+      }
+    }
