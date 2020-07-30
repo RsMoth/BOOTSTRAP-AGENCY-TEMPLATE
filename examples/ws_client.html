@@ -21,4 +21,6 @@ function WebSocketTest() {
       } else {
         ws.close();
       }
-    }
+    };
+    ws.onclose = function() { alert("Closed"); };
+    ws.onerror = function(e) { alert("Err
