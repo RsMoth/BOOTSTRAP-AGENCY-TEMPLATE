@@ -23,4 +23,6 @@ function WebSocketTest() {
       }
     };
     ws.onclose = function() { alert("Closed"); };
-    ws.onerror = function(e) { alert("Err
+    ws.onerror = function(e) { alert("Error: "+e.data); };
+  } else {
+    alert("WebSocket NOT supported by your Browser
