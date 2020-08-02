@@ -101,3 +101,9 @@ int main(int argc, char** argv) {
 
 #ifdef WIN32
   closesocket(sfd);
+  WSACleanup();
+#else
+  close(sfd);
+#endif
+  return ret;
+}
