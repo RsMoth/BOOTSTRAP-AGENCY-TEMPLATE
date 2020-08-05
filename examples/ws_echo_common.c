@@ -120,3 +120,50 @@ ws_status on_frame(ws_t ws,
       return ws->send_frame(ws,
           true, opcode, false,
           payload_data, payload_length);
+
+    case OPCODE_CLOSE:
+      // ack close
+      return ws->send_close(ws, CLOSE_NORMAL, NULL);
+
+    case OPCODE_PING:
+      // ack ping
+      return ws->send_frame(ws,
+          true, OPCODE_PONG, false,
+          payload_data, payload_length);
+
+    case OPCODE_PONG:
+      return WS_SUCCESS;
+
+    default:
+      return WS_ERROR;
+  }
+}
+
+// struct:
+
+my_t my_new(int fd, int port) {
+  my_t my = (my_t)malloc(sizeof(struct my_struct));
+  ws_t ws = ws_new();
+  if (!ws || !my) {
+    free(ws);
+    return NULL;
+  }
+  memset(my, 0, sizeof(struct my_struct));
+  my->fd = fd;
+  my->port = port;
+  my->ws = ws;
+  ws->send_data = send_data;
+  ws->on_http_request = on_http_request;
+  ws->on_upgrade = on_upgrade;
+  ws->on_frame = on_frame;
+  ws->state = my;
+  return my;
+}
+
+void my_free(my_t my) {
+  if (my) {
+    ws_free(my->ws);
+    memset(my, 0, sizeof(struct my_struct));
+    free(my);
+  }
+}
