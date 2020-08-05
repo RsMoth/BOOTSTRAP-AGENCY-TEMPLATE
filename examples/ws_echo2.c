@@ -71,3 +71,38 @@ int main(int argc, char** argv) {
     fprintf(stderr, "WSAStartup failed with error: %d\n", res);
     exit(1);
   }
+#endif
+
+  int port = 8080;
+
+  int s_fd = sm_listen(port);
+  if (s_fd < 0) {
+    return -1;
+  }
+
+  sm_t sm = sm_new(4096);
+  sm->on_accept = on_accept;
+  sm->on_recv = on_recv;
+  sm->on_close = on_close;
+
+  my_sm_t my_sm = (my_sm_t)malloc(sizeof(struct my_sm_struct));
+  my_sm->port = port;
+  //sm->state = my_sm; // optional
+
+  sm->add_fd(sm, s_fd, NULL, my_sm, true);
+
+  int ret = 0;
+  while (!quit_flag) {
+    if (sm->select(sm, 2) < 0) {
+      ret = -1;
+      break;
+    }
+  }
+  sm->cleanup(sm);
+  free(my_sm);
+  sm_free(sm);
+#ifdef WIN32
+  WSACleanup();
+#endif
+  return ret;
+}
