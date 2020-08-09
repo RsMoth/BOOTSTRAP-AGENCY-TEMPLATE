@@ -5,4 +5,5 @@ nobase_include_HEADERS = \
     ios-webkit-debug-proxy/device_listener.h \
     ios-webkit-debug-proxy/ios_webkit_debug_proxy.h \
     ios-webkit-debug-proxy/socket_manager.h \
-    ios-webkit-
+    ios-webkit-debug-proxy/webinspector.h \
+    ios-webkit-debug-proxy/websocket.h
