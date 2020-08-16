@@ -21,4 +21,9 @@ General Public License for more details.  */
 #include <config.h>
 #endif
 
-#includ
+#include <sys/types.h>
+#include <stdio.h>
+#include <assert.h>
+#include <errno.h>
+
+#ifndef HAVE_GETLI
