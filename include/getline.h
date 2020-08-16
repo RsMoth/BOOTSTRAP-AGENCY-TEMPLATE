@@ -13,3 +13,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 General Public License for more details.  */
 
 /* Written by Jan Brittenson, bson@gnu.ai.mit.edu.  */
+
+#ifndef __GETLINE_H
+#define __GETLINE_H
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#includ
