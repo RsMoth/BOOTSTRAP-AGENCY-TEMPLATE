@@ -26,4 +26,6 @@ General Public License for more details.  */
 #include <assert.h>
 #include <errno.h>
 
-#ifndef HAVE_GETLI
+#ifndef HAVE_GETLINE
+/* Always add at least this many bytes when extending the buffer.  */
+#define GETLINE_M
