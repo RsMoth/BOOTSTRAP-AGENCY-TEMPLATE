@@ -28,4 +28,7 @@ General Public License for more details.  */
 
 #ifndef HAVE_GETLINE
 /* Always add at least this many bytes when extending the buffer.  */
-#define GETLINE_M
+#define GETLINE_MIN_CHUNK 256
+
+static inline int getstr(char **lineptr, size_t *n, FILE *stream,
+    char term
