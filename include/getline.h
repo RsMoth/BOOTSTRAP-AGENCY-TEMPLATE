@@ -31,4 +31,5 @@ General Public License for more details.  */
 #define GETLINE_MIN_CHUNK 256
 
 static inline int getstr(char **lineptr, size_t *n, FILE *stream,
-    char term
+    char terminator, int offset) {
+  int nchars_avail;  /* Allocated but unused chars in *LINEPTR.
