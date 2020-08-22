@@ -32,4 +32,6 @@ General Public License for more details.  */
 
 static inline int getstr(char **lineptr, size_t *n, FILE *stream,
     char terminator, int offset) {
-  int nchars_avail;  /* Allocated but unused chars in *LINEPTR.
+  int nchars_avail;  /* Allocated but unused chars in *LINEPTR.  */
+  char *read_pos;    /* Where we're reading into *LINEPTR. */
+  int ret;
