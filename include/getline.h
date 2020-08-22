@@ -35,3 +35,11 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
   int nchars_avail;  /* Allocated but unused chars in *LINEPTR.  */
   char *read_pos;    /* Where we're reading into *LINEPTR. */
   int ret;
+
+  if (!lineptr || !n || !stream)
+  {
+    errno = EINVAL;
+    return -1;
+  }
+
+  if (!*line
