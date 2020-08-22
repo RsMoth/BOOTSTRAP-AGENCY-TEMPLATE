@@ -48,4 +48,10 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
     *lineptr = malloc (*n);
     if (!*lineptr)
     {
-      err
+      errno = ENOMEM;
+      return -1;
+    }
+  }
+
+  nchars_avail = *n - offset;
+  read_pos = *lineptr + o
