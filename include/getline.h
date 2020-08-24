@@ -64,4 +64,5 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
     save_errno = errno;
 
     /* We always want at least one char left in the buffer, since we
-       al
+       always (unless we get an error while reading the first char)
+       NUL-terminat
