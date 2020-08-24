@@ -61,4 +61,7 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
     int save_errno;
     register int c = getc (stream);
 
-    save_e
+    save_errno = errno;
+
+    /* We always want at least one char left in the buffer, since we
+       al
