@@ -54,4 +54,11 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
   }
 
   nchars_avail = *n - offset;
-  read_pos = *lineptr + o
+  read_pos = *lineptr + offset;
+
+  for (;;)
+  {
+    int save_errno;
+    register int c = getc (stream);
+
+    save_e
