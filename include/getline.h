@@ -65,4 +65,6 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
 
     /* We always want at least one char left in the buffer, since we
        always (unless we get an error while reading the first char)
-       NUL-terminat
+       NUL-terminate the line buffer.  */
+
+    assert((*lineptr + *n) == (read_pos + nchars_avai
