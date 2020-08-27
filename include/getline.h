@@ -67,4 +67,9 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
        always (unless we get an error while reading the first char)
        NUL-terminate the line buffer.  */
 
-    assert((*lineptr + *n) == (read_pos + nchars_avai
+    assert((*lineptr + *n) == (read_pos + nchars_avail));
+    if (nchars_avail < 2)
+    {
+      if (*n > GETLINE_MIN_CHUNK)
+        *n *= 2;
+      els
