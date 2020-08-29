@@ -80,4 +80,7 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
       if (!*lineptr)
       {
         errno = ENOMEM;
-       
+        return -1;
+      }
+      read_pos = *n - nchars_avail + *lineptr;
+      assert((*lineptr + *n) == (read_pos + 
