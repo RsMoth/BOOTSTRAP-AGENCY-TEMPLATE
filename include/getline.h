@@ -76,4 +76,8 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
         *n += GETLINE_MIN_CHUNK;
 
       nchars_avail = *n + *lineptr - read_pos;
-      
+      *lineptr = realloc (*lineptr, *n);
+      if (!*lineptr)
+      {
+        errno = ENOMEM;
+       
