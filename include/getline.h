@@ -72,4 +72,8 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
     {
       if (*n > GETLINE_MIN_CHUNK)
         *n *= 2;
-      els
+      else
+        *n += GETLINE_MIN_CHUNK;
+
+      nchars_avail = *n + *lineptr - read_pos;
+      
