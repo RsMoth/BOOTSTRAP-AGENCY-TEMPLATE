@@ -83,4 +83,9 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
         return -1;
       }
       read_pos = *n - nchars_avail + *lineptr;
-      assert((*lineptr + *n) == (read_pos + 
+      assert((*lineptr + *n) == (read_pos + nchars_avail));
+    }
+
+    if (ferror (stream))
+    {
+      /* Might like to return partial line
