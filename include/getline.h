@@ -88,4 +88,6 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
 
     if (ferror (stream))
     {
-      /* Might like to return partial line
+      /* Might like to return partial line, but there is no
+         place for us to store errno.  And we don't want to just
+ 
