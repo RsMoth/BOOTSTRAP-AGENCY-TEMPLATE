@@ -95,4 +95,8 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
       return -1;
     }
 
-    if (c == EO
+    if (c == EOF)
+    {
+      /* Return partial line, if any.  */
+      if (read_pos == *lineptr)
+        
