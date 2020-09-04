@@ -90,4 +90,9 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
     {
       /* Might like to return partial line, but there is no
          place for us to store errno.  And we don't want to just
- 
+         lose errno.  */
+      errno = save_errno;
+      return -1;
+    }
+
+    if (c == EO
