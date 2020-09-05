@@ -99,4 +99,10 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
     {
       /* Return partial line, if any.  */
       if (read_pos == *lineptr)
-        
+        return -1;
+      else
+        break;
+    }
+
+    *read_pos++ = c;
+    nchars_avail--
