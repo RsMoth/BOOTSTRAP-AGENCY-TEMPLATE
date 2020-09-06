@@ -115,4 +115,8 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
   /* Done - NUL terminate and return the number of chars read.  */
   *read_pos = '\0';
 
-  ret = read_po
+  ret = read_pos - (*lineptr + offset);
+  return ret;
+}
+
+static inline int getline(char **lineptr,
