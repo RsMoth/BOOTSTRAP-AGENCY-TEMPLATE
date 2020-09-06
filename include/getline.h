@@ -105,4 +105,11 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
     }
 
     *read_pos++ = c;
-    nchars_avail--
+    nchars_avail--;
+
+    if (c == terminator)
+      /* Return the line.  */
+      break;
+  }
+
+  /* Done -
