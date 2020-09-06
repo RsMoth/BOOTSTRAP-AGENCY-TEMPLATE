@@ -119,4 +119,8 @@ static inline int getstr(char **lineptr, size_t *n, FILE *stream,
   return ret;
 }
 
-static inline int getline(char **lineptr,
+static inline int getline(char **lineptr, size_t *n, FILE *stream)
+{
+  return getstr(lineptr, n, stream, '\n', 0);
+}
+#en
