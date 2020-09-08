@@ -123,4 +123,6 @@ static inline int getline(char **lineptr, size_t *n, FILE *stream)
 {
   return getstr(lineptr, n, stream, '\n', 0);
 }
-#en
+#endif
+
+#endif
