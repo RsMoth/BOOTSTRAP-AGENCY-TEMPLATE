@@ -5,4 +5,11 @@
 // iOS device add/remove listener.
 //
 
-#ifndef DEV
+#ifndef DEVICE_LISTENER_H
+#define	DEVICE_LISTENER_H
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
+#include <stdbool.h>
