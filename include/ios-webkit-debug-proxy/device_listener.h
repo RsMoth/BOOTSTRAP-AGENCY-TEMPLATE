@@ -13,3 +13,10 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+
+typedef uint8_t dl_status;
+#define DL_ERROR 1
+#define DL_SUCCESS
