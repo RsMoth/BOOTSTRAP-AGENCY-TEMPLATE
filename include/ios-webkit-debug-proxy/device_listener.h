@@ -19,4 +19,8 @@ extern "C" {
 
 typedef uint8_t dl_status;
 #define DL_ERROR 1
-#define DL_SUCCESS
+#define DL_SUCCESS 0
+
+
+// Create a device add/remove connection.
+// @param recv_timeout milliseconds,
