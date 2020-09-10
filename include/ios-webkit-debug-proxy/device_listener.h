@@ -23,4 +23,6 @@ typedef uint8_t dl_status;
 
 
 // Create a device add/remove connection.
-// @param recv_timeout milliseconds,
+// @param recv_timeout milliseconds, negative for non_blocking
+// @result fd, or -1 for error
+int dl_connect(int recv_ti
