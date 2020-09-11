@@ -25,4 +25,10 @@ typedef uint8_t dl_status;
 // Create a device add/remove connection.
 // @param recv_timeout milliseconds, negative for non_blocking
 // @result fd, or -1 for error
-int dl_connect(int recv_ti
+int dl_connect(int recv_timeout);
+
+
+struct dl_struct;
+typedef struct dl_struct *dl_t;
+dl_t dl_new();
+void dl_free(dl_t se
