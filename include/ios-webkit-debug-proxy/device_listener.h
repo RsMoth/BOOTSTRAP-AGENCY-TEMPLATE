@@ -31,4 +31,9 @@ int dl_connect(int recv_timeout);
 struct dl_struct;
 typedef struct dl_struct *dl_t;
 dl_t dl_new();
-void dl_free(dl_t se
+void dl_free(dl_t self);
+
+struct dl_private;
+typedef struct dl_private *dl_private_t;
+
+// iOS device add/remove listen
