@@ -36,4 +36,11 @@ void dl_free(dl_t self);
 struct dl_private;
 typedef struct dl_private *dl_private_t;
 
-// iOS device add/remove listen
+// iOS device add/remove listener.
+struct dl_struct {
+
+    //
+    // Use these API:
+    //
+
+    // Call once afte
