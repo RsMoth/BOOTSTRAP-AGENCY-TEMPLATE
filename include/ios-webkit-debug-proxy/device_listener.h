@@ -43,4 +43,7 @@ struct dl_struct {
     // Use these API:
     //
 
-    // Call once afte
+    // Call once after startup.
+    dl_status (*start)(dl_t self);
+
+    // Call to append data, calls on_attach/on_detach wh
