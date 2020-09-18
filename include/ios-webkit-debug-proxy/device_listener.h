@@ -46,4 +46,6 @@ struct dl_struct {
     // Call once after startup.
     dl_status (*start)(dl_t self);
 
-    // Call to append data, calls on_attach/on_detach wh
+    // Call to append data, calls on_attach/on_detach when we have a full
+    // input packet.
+    dl_status (*on_recv)(dl_t self, const char *buf, ssize_t length);
