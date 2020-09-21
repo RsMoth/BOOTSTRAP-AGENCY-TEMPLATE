@@ -57,4 +57,5 @@ struct dl_struct {
     // Set these callbacks:
     //
 
-    // Called t
+    // Called to send "listen" and other output packets.
+    dl_status (*send_packet)(dl_t self, const cha
