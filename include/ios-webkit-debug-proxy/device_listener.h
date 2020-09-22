@@ -58,4 +58,7 @@ struct dl_struct {
     //
 
     // Called to send "listen" and other output packets.
-    dl_status (*send_packet)(dl_t self, const cha
+    dl_status (*send_packet)(dl_t self, const char *buf, size_t length);
+
+    // Called by on_recv.
+    // @param device_id 40-cha
