@@ -61,4 +61,6 @@ struct dl_struct {
     dl_status (*send_packet)(dl_t self, const char *buf, size_t length);
 
     // Called by on_recv.
-    // @param device_id 40-cha
+    // @param device_id 40-character hex iOS device identifier.
+    // @param device_num usbmuxd device identifier
+    dl_s
