@@ -65,4 +65,6 @@ struct dl_struct {
     // @param device_num usbmuxd device identifier
     dl_status (*on_attach)(dl_t self, const char *device_id, int device_num);
 
-    dl_status (*on_de
+    dl_status (*on_detach)(dl_t self, const char *device_id, int device_num);
+
+    // For internal use o
