@@ -67,4 +67,13 @@ struct dl_struct {
 
     dl_status (*on_detach)(dl_t self, const char *device_id, int device_num);
 
-    // For internal use o
+    // For internal use only:
+    dl_private_t private_state;
+};
+
+
+#ifdef	__cplusplus
+}
+#endif
+
+#endif	/* DEV
