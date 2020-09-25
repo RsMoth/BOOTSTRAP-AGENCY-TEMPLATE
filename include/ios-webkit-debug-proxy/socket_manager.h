@@ -46,3 +46,40 @@ struct sm_struct {
       is_server);
 
   sm_status (*remove_fd)(sm_t self, int fd);
+
+  // @param value a value for the on_sent callback
+  sm_status (*send)(sm_t self, int fd, const char *data, size_t length,
+      void* value);
+
+  int (*select)(sm_t self, int timeout_secs);
+
+  sm_status (*cleanup)(sm_t self);
+
+  void *state;
+  bool *is_debug;
+
+  // Set these callbacks:
+
+  // @param server_value specified in the add_fd call
+  // @param to_value will be used in future on_recv calls
+  sm_status (*on_accept)(sm_t self,
+                         int server_fd, void *server_value,
+                         int fd, void **to_value);
+
+  sm_status (*on_sent)(sm_t self, int fd, void *value,
+                       const char *buf, ssize_t length);
+
+  sm_status (*on_recv)(sm_t self, int fd, void *value,
+                       const char *buf, ssize_t length);
+
+  sm_status (*on_close)(sm_t self, int fd, void *value, bool is_server);
+
+  // For internal use only:
+  sm_private_t private_state;
+};
+
+#ifdef	__cplusplus
+}
+#endif
+
+#endif	/* SOCKET_SELECTOR_H */
