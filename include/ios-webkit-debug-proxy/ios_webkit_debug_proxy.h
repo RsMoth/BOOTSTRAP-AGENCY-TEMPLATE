@@ -78,3 +78,34 @@ struct iwdp_struct {
   // @param to_min_port e.g. set to 9222
   // @param to_max_port e.g. set to 9322
   iwdp_status (*select_port)(iwdp_t self, const char *device_id, int *to_port,
+                             int *to_min_port, int *to_max_port);
+
+  // Bind and listen to a server port.
+  // @param port e.g. 9222
+  int (*listen)(iwdp_t self, int port);
+
+  // Connect to a host:port for static data.
+  // @param hostname_with_port e.g. "chrome-devtools-frontend.appspot.com:8080"
+  int (*connect)(iwdp_t self, const char *hostname_with_port);
+
+  // Send bytes to fd.
+  iwdp_status (*send)(iwdp_t self, int fd, const char *data, size_t length);
+
+  // Add a fd that was returned from attach/listen/connect.
+  iwdp_status (*add_fd)(iwdp_t self, int fd, void *ssl_session, void *value,
+      bool is_server);
+
+  iwdp_status (*remove_fd)(iwdp_t self, int fd);
+
+
+  // For internal use only:
+  iwdp_status (*on_error)(iwdp_t self, const char *format, ...);
+  iwdp_private_t private_state;
+};
+
+#ifdef	__cplusplus
+}
+#endif
+
+#endif	/* IOS_WEBKIT_DEBUG_PROXY_H */
+
