@@ -76,4 +76,5 @@ struct dl_struct {
 }
 #endif
 
-#endif	/* DEV
+#endif	/* DEVICE_LISTENER_H */
+
