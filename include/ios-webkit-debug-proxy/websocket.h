@@ -48,3 +48,55 @@ struct ws_struct {
 
   //
   // Use these APIs:
+  //
+
+  ws_status (*on_recv)(ws_t self, const char *buf, ssize_t length);
+
+  ws_status (*send_connect)(ws_t self,
+          const char *resource, const char *protocol,
+          const char *host, const char *origin);
+
+  ws_status (*send_upgrade)(ws_t self);
+
+  ws_status (*send_frame)(ws_t self,
+          bool is_fin, ws_opcode opcode, bool is_masking,
+          const char *payload_data, size_t payload_length);
+
+  ws_status (*send_close)(ws_t self, ws_close close_code,
+          const char *reason);
+
+  void *state;
+  bool *is_debug;
+
+  //
+  // Set these callbacks:
+  //
+
+  ws_status (*send_data)(ws_t self,
+          const char *data, size_t length);
+
+  ws_status (*on_http_request)(ws_t self,
+          const char *method, const char *resource, const char *version,
+          const char *host, const char *headers, size_t headers_length,
+          bool is_websocket, bool *to_keep_alive);
+
+  ws_status (*on_upgrade)(ws_t self,
+          const char *resource, const char *protocol,
+          int version, const char *sec_key);
+
+  ws_status (*on_frame)(ws_t self,
+          bool is_fin, ws_opcode opcode, bool is_masking,
+          const char *payload_data, size_t payload_length,
+          bool *to_keep);
+
+  // For internal use only:
+  ws_status (*on_error)(ws_t self, const char *format, ...);
+  ws_private_t private_state;
+};
+
+
+#ifdef	__cplusplus
+}
+#endif
+
+#endif	/* WEBSOCKET_H */
