@@ -16,4 +16,5 @@
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
  *	This product includes software developed by the University of
- *	California, Berkeley and i
+ *	California, Berkeley and its contributors.
+ * 4. Neither the name of the University nor the names of its contri
