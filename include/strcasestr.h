@@ -37,4 +37,11 @@
 #ifndef __STRCASESTR_H
 #define __STRCASESTR_H
 
-#ifdef HAVE_C
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <ctype.h>
+#include <string.h>
+
+#ifn
