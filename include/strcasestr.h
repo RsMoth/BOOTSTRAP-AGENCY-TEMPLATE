@@ -44,4 +44,8 @@
 #include <ctype.h>
 #include <string.h>
 
-#ifn
+#ifndef HAVE_STRCASESTR
+static inline char* strcasestr(const char *s, const char *find)
+{
+	char c, sc;
+	size_t
