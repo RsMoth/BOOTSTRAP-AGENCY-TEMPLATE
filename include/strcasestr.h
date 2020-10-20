@@ -48,4 +48,8 @@
 static inline char* strcasestr(const char *s, const char *find)
 {
 	char c, sc;
-	size_t
+	size_t len;
+
+	if ((c = *find++) != 0) {
+		c = tolower((unsigned char)c);
+		len
