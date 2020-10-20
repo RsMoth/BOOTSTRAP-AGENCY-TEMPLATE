@@ -52,4 +52,9 @@ static inline char* strcasestr(const char *s, const char *find)
 
 	if ((c = *find++) != 0) {
 		c = tolower((unsigned char)c);
-		len
+		len = strlen(find);
+		do {
+			do {
+				if ((sc = *s++) == 0)
+					return (NULL);
+			} 
