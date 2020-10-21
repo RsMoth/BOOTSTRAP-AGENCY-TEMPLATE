@@ -57,4 +57,5 @@ static inline char* strcasestr(const char *s, const char *find)
 			do {
 				if ((sc = *s++) == 0)
 					return (NULL);
-			} 
+			} while ((char)tolower((unsigned char)sc) != c);
+		} while (strncasecmp(s, find,
