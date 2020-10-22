@@ -3,4 +3,5 @@
    Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu>.
 
    This file is part of the libiberty library.
-   Libiberty is free software;
+   Libiberty is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Library General Publi
