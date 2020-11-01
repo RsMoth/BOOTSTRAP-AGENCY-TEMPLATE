@@ -15,4 +15,10 @@
 
    You should have received a copy of the GNU Library General Public
    License along with libiberty; see the file COPYING.LIB.  If
-   not, write to the Free Software Foundation, Inc., 51 Franklin Street - Fifth Flo
+   not, write to the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
+
+#ifndef __STRNDUP_H
+#define __STRNDUP_H
+
+#ifdef HAVE_CON
