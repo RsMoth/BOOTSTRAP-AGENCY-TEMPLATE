@@ -37,4 +37,8 @@ static inline char* strndup(const char *s, size_t n)
     len = n;
 
   result = (char *) malloc (len + 1);
-  if (
+  if (!result)
+    return 0;
+
+  result[len] = '\0';
+  return (char *) memcpy (result, s, len)
