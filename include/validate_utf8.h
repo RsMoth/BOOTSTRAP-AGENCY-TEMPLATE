@@ -1,4 +1,5 @@
 /*
  * Copyright 2011 self.disconnect
  *
- * Licensed under the Apache Lic
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compli
