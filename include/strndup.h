@@ -41,4 +41,8 @@ static inline char* strndup(const char *s, size_t n)
     return 0;
 
   result[len] = '\0';
-  return (char *) memcpy (result, s, len)
+  return (char *) memcpy (result, s, len);
+}
+#endif
+
+#endif
