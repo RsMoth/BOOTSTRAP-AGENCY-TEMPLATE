@@ -21,4 +21,11 @@
 #ifndef __STRNDUP_H
 #define __STRNDUP_H
 
-#ifdef HAVE_CON
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <string.h>
+
+#ifndef HAVE_STRNDUP
+static inl
