@@ -15,4 +15,6 @@
  */
 
 /*
+ * This is the state transition table for validating UTF-8 input.
  *
+ * We start in the 
