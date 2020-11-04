@@ -17,4 +17,5 @@
 /*
  * This is the state transition table for validating UTF-8 input.
  *
- * We start in the 
+ * We start in the initial state (s0) and expect to be in that state at the end
+ * of the input sequence. If we transiti
