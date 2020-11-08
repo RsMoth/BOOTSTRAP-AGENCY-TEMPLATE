@@ -19,4 +19,5 @@
  *
  * We start in the initial state (s0) and expect to be in that state at the end
  * of the input sequence. If we transition to the error state (e) or end in a
- * state other than end state (s0), we conside
+ * state other than end state (s0), we consider that input sequence to be
+ * invalid. In an attempt to make the table 
