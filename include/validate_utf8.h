@@ -21,4 +21,5 @@
  * of the input sequence. If we transition to the error state (e) or end in a
  * state other than end state (s0), we consider that input sequence to be
  * invalid. In an attempt to make the table a little easier to understand,
- * states t1, t2, and t3 are used to signify the various t
+ * states t1, t2, and t3 are used to signify the various tail states. The
+ * number following the t is the number of remaining tail inputs remaining
