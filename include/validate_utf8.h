@@ -22,4 +22,6 @@
  * state other than end state (s0), we consider that input sequence to be
  * invalid. In an attempt to make the table a little easier to understand,
  * states t1, t2, and t3 are used to signify the various tail states. The
- * number following the t is the number of remaining tail inputs remaining
+ * number following the t is the number of remaining tail inputs remaining. A
+ * tail accepts input in the range of %x80 - %xBF. With valid input, t3
+ * transition
