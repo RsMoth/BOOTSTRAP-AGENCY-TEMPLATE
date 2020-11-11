@@ -29,4 +29,7 @@
  * States s1 through s4 are used to handle the more complex intermediary
  * transitions.
  *
- * Here is the ABNF from which the ta
+ * Here is the ABNF from which the table was derived (see RFC 3629):
+ *
+ *   UTF8-octets = *( UTF8-char )
+ *   UTF8-char  
