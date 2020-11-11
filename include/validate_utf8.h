@@ -24,4 +24,6 @@
  * states t1, t2, and t3 are used to signify the various tail states. The
  * number following the t is the number of remaining tail inputs remaining. A
  * tail accepts input in the range of %x80 - %xBF. With valid input, t3
- * transition
+ * transitions to t2, t2 transitions to t1, and t1 transition back to s0.
+ *
+ * States s1 through s4 are us
