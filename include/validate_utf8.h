@@ -26,4 +26,7 @@
  * tail accepts input in the range of %x80 - %xBF. With valid input, t3
  * transitions to t2, t2 transitions to t1, and t1 transition back to s0.
  *
- * States s1 through s4 are us
+ * States s1 through s4 are used to handle the more complex intermediary
+ * transitions.
+ *
+ * Here is the ABNF from which the ta
