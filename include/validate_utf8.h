@@ -35,4 +35,5 @@
  *   UTF8-char   = UTF8-1 / UTF8-2 / UTF8-3 / UTF8-4
  *   UTF8-1      = %x00-7F
  *   UTF8-2      = %xC2-DF UTF8-tail
- *  
+ *   UTF8-3      = %xE0 %xA0-BF UTF8-tail / %xE1-EC 2( UTF8 - tail ) /
+ *                 %xED %x80-9F 
