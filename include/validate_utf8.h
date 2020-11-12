@@ -41,4 +41,8 @@
  *                 %xF4 %x80-8F 2( UTF8-tail )
  *   UTF8-tail   = %x80-BF
  *
- * start          
+ * start           end
+ * state  input   state
+ * --------------------
+ *  s0 : %x00-7F => s0
+ *  s0 : %x80
