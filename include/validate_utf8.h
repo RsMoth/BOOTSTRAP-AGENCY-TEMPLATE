@@ -49,4 +49,8 @@
  *  s0 : %xC2-DF => t1
  *  s0 : %xE0    => s1
  *  s0 : %xE1-EC => t2
- *  s0 : %xED    =>
+ *  s0 : %xED    => s2
+ *  s0 : %xEE-EF => t2
+ *  s0 : %xF0    => s3
+ *  s0 : %xF1-F3 => t3
+ *  s0 : %xF4    =
