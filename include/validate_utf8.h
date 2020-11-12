@@ -32,4 +32,7 @@
  * Here is the ABNF from which the table was derived (see RFC 3629):
  *
  *   UTF8-octets = *( UTF8-char )
- *   UTF8-char  
+ *   UTF8-char   = UTF8-1 / UTF8-2 / UTF8-3 / UTF8-4
+ *   UTF8-1      = %x00-7F
+ *   UTF8-2      = %xC2-DF UTF8-tail
+ *  
