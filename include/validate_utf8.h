@@ -45,4 +45,8 @@
  * state  input   state
  * --------------------
  *  s0 : %x00-7F => s0
- *  s0 : %x80
+ *  s0 : %x80-C1 => e
+ *  s0 : %xC2-DF => t1
+ *  s0 : %xE0    => s1
+ *  s0 : %xE1-EC => t2
+ *  s0 : %xED    =>
