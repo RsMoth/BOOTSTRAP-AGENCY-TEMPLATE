@@ -77,4 +77,5 @@
  *  s4 : %x80-8F => t2
  *  s4 : %x90-FF => e
  *
- *  Here 
+ *  Here is an example of one way to use the UTF-8 validation table to validate
+ *  input. The i
