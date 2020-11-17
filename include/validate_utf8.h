@@ -72,4 +72,9 @@
  *  t3 : %xC0-FF => e
  *  s3 : %x00-8F => e
  *  s3 : %x90-BF => t2
- *  s3 : %xC0-FF =>
+ *  s3 : %xC0-FF => e
+ *  s4 : %x00-7F => e
+ *  s4 : %x80-8F => t2
+ *  s4 : %x90-FF => e
+ *
+ *  Here 
