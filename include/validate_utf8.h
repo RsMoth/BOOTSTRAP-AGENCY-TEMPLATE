@@ -78,4 +78,5 @@
  *  s4 : %x90-FF => e
  *
  *  Here is an example of one way to use the UTF-8 validation table to validate
- *  input. The i
+ *  input. The input bytes must be unsigned in order to make sure that the
+ *  table is accessed properly. While processi
