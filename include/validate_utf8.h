@@ -80,4 +80,7 @@
  *  Here is an example of one way to use the UTF-8 validation table to validate
  *  input. The input bytes must be unsigned in order to make sure that the
  *  table is accessed properly. While processing the input sequence, only the
- *  INVALID state corresponds to an error. After proccessing of the input
+ *  INVALID state corresponds to an error. After proccessing of the input has
+ *  been completed, any state other than the VALID state is an error.
+ *
+ *    uns
