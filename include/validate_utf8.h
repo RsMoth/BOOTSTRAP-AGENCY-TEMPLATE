@@ -84,4 +84,7 @@
  *  been completed, any state other than the VALID state is an error.
  *
  *    unsigned char *input = // pointer to the input sequence
- *    unsigned int state = 
+ *    unsigned int state = UTF8_VALID;
+ *
+ *    while (*input != 0) {
+ *      state = validate_utf8[state + *input++
