@@ -87,4 +87,9 @@
  *    unsigned int state = UTF8_VALID;
  *
  *    while (*input != 0) {
- *      state = validate_utf8[state + *input++
+ *      state = validate_utf8[state + *input++];
+ *      if (state == UTF8_INVALID) {
+ *        break;
+ *      }
+ *    }
+ *    if 
