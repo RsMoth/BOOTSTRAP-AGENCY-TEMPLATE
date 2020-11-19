@@ -83,4 +83,5 @@
  *  INVALID state corresponds to an error. After proccessing of the input has
  *  been completed, any state other than the VALID state is an error.
  *
- *    uns
+ *    unsigned char *input = // pointer to the input sequence
+ *    unsigned int state = 
