@@ -92,4 +92,12 @@
  *        break;
  *      }
  *    }
- *    if 
+ *    if (state == UTF8_VALID) {
+ *      // Valid
+ *    } else {
+ *      // Invalid
+ *    }
+ *
+ */
+
+#if !defined(_VALID
