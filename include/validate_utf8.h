@@ -100,4 +100,9 @@
  *
  */
 
-#if !defined(_VALID
+#if !defined(_VALIDATE_UTF8_H_)
+#define _VALIDATE_UTF8_H_
+
+#define S0 0x000
+#define T1 0x100
+#define T2 0x200
