@@ -106,3 +106,8 @@
 #define S0 0x000
 #define T1 0x100
 #define T2 0x200
+#define S1 0x300
+#define S2 0x400
+#define T3 0x500
+#define S3 0x600
+#define S4 0x70
