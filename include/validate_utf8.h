@@ -110,4 +110,10 @@
 #define S2 0x400
 #define T3 0x500
 #define S3 0x600
-#define S4 0x70
+#define S4 0x700
+#define ER 0x800
+
+#define UTF8_VALID   0x000
+#define UTF8_INVALID 0x800
+
+static const unsigned sho
