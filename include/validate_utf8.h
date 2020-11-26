@@ -116,4 +116,6 @@
 #define UTF8_VALID   0x000
 #define UTF8_INVALID 0x800
 
-static const unsigned sho
+static const unsigned short validate_utf8[2048] = {
+/* S0 (0x000) */
+S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0
