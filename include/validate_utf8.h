@@ -120,4 +120,5 @@ static const unsigned short validate_utf8[2048] = {
 /* S0 (0x000) */
 S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0, /* %x00-0F */
 S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0, /* %x10-1F */
-S0,S0,S0,S0
+S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0, /* %x20-2F */
+S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0,S0, /* %
