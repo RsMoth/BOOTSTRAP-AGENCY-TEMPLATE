@@ -265,4 +265,4 @@ ER,ER,ER,ER,ER,ER,ER,ER,ER,ER,ER,ER,ER,ER,ER,ER, /* %xF0-FF */
 #undef S4
 #undef ER
 
-#endif /* _
+#endif /* _VALIDATE_UTF8_H_ */
