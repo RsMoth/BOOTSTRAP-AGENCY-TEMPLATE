@@ -256,3 +256,13 @@ ER,ER,ER,ER,ER,ER,ER,ER,ER,ER,ER,ER,ER,ER,ER,ER, /* %xF0-FF */
 };
 
 #undef S0
+#undef T1
+#undef T2
+#undef S1
+#undef S2
+#undef T3
+#undef S3
+#undef S4
+#undef ER
+
+#endif /* _
