@@ -10,4 +10,6 @@ lib_LTLIBRARIES = libios_webkit_debug_proxy.la
 libios_webkit_debug_proxy_la_LIBADD =
 libios_webkit_debug_proxy_la_LDFLAGS = $(AM_LDFLAGS)
 libios_webkit_debug_proxy_la_SOURCES = ios_webkit_debug_proxy_main.c \
- 
+    base64.c base64.h \
+    char_buffer.c char_buffer.h \
+    device_listener.c device_listene
