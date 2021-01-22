@@ -6,4 +6,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/ios-webkit-debug-p
 AM_CFLAGS = $(GLOBAL_CFLAGS) $(libimobiledevice_CFLAGS) $(libplist_CFLAGS) $(libpcreposix_CFLAGS) $(openssl_CFLAGS)
 AM_LDFLAGS = $(libimobiledevice_LIBS) $(libplist_LIBS) $(libpcreposix_LIBS) $(openssl_LIBS)
 
-lib_LTLIBRARIES = libios_webki
+lib_LTLIBRARIES = libios_webkit_debug_proxy.la
+libios_webkit_debug_proxy_la_LIBADD =
+libios_webkit_debug_proxy_la_LDFLAGS = $(AM_
