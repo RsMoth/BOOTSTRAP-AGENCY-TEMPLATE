@@ -8,4 +8,6 @@ AM_LDFLAGS = $(libimobiledevice_LIBS) $(libplist_LIBS) $(libpcreposix_LIBS) $(op
 
 lib_LTLIBRARIES = libios_webkit_debug_proxy.la
 libios_webkit_debug_proxy_la_LIBADD =
-libios_webkit_debug_proxy_la_LDFLAGS = $(AM_
+libios_webkit_debug_proxy_la_LDFLAGS = $(AM_LDFLAGS)
+libios_webkit_debug_proxy_la_SOURCES = ios_webkit_debug_proxy_main.c \
+ 
