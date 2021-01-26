@@ -12,4 +12,6 @@ libios_webkit_debug_proxy_la_LDFLAGS = $(AM_LDFLAGS)
 libios_webkit_debug_proxy_la_SOURCES = ios_webkit_debug_proxy_main.c \
     base64.c base64.h \
     char_buffer.c char_buffer.h \
-    device_listener.c device_listene
+    device_listener.c device_listener.h \
+    hash_table.c hash_table.h \
+    ios_webkit_debug_proxy.c ios_webkit
