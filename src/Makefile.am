@@ -14,4 +14,8 @@ libios_webkit_debug_proxy_la_SOURCES = ios_webkit_debug_proxy_main.c \
     char_buffer.c char_buffer.h \
     device_listener.c device_listener.h \
     hash_table.c hash_table.h \
-    ios_webkit_debug_proxy.c ios_webkit
+    ios_webkit_debug_proxy.c ios_webkit_debug_proxy.h \
+    port_config.c port_config.h \
+    rpc.c rpc.h \
+    sha1.c sha1.h \
+    socket_mana
