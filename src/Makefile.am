@@ -21,4 +21,7 @@ libios_webkit_debug_proxy_la_SOURCES = ios_webkit_debug_proxy_main.c \
     socket_manager.c socket_manager.h \
     validate_utf8.h \
     webinspector.c webinspector.h \
-    webs
+    websocket.c websocket.h
+
+bin_PROGRAMS = ios_webkit_debug_proxy
+ios_webkit_debug_proxy_SOURCES = 
