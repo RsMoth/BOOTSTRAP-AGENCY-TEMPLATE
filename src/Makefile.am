@@ -24,4 +24,7 @@ libios_webkit_debug_proxy_la_SOURCES = ios_webkit_debug_proxy_main.c \
     websocket.c websocket.h
 
 bin_PROGRAMS = ios_webkit_debug_proxy
-ios_webkit_debug_proxy_SOURCES = 
+ios_webkit_debug_proxy_SOURCES = ios_webkit_debug_proxy_main.c \
+    base64.c base64.h \
+    char_buffer.c char_buffer.h \
+   
