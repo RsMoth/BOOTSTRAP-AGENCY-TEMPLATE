@@ -29,4 +29,6 @@ ios_webkit_debug_proxy_SOURCES = ios_webkit_debug_proxy_main.c \
     char_buffer.c char_buffer.h \
     device_listener.c device_listener.h \
     hash_table.c hash_table.h \
-    ios_webki
+    ios_webkit_debug_proxy.c ios_webkit_debug_proxy.h \
+    port_config.c port_config.h \
+    rp
