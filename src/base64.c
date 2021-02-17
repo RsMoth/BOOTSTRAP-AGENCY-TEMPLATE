@@ -103,3 +103,81 @@ int base64_encode( unsigned char *dst, size_t *dlen,
     }
 
     n = (slen / 3) * 3;
+
+    for( i = 0, p = dst; i < n; i += 3 )
+    {
+        C1 = *src++;
+        C2 = *src++;
+        C3 = *src++;
+
+        *p++ = base64_enc_map[(C1 >> 2) & 0x3F];
+        *p++ = base64_enc_map[(((C1 &  3) << 4) + (C2 >> 4)) & 0x3F];
+        *p++ = base64_enc_map[(((C2 & 15) << 2) + (C3 >> 6)) & 0x3F];
+        *p++ = base64_enc_map[C3 & 0x3F];
+    }
+
+    if( i < slen )
+    {
+        C1 = *src++;
+        C2 = ((i + 1) < slen) ? *src++ : 0;
+
+        *p++ = base64_enc_map[(C1 >> 2) & 0x3F];
+        *p++ = base64_enc_map[(((C1 & 3) << 4) + (C2 >> 4)) & 0x3F];
+
+        if( (i + 1) < slen )
+             *p++ = base64_enc_map[((C2 & 15) << 2) & 0x3F];
+        else *p++ = '=';
+
+        *p++ = '=';
+    }
+
+    *dlen = p - dst;
+    *p = 0;
+
+    return( 0 );
+}
+
+/*
+ * Decode a base64-formatted buffer
+ */
+int base64_decode( unsigned char *dst, size_t *dlen,
+                   const unsigned char *src, size_t slen )
+{
+    size_t i, n;
+    uint32_t j, x;
+    unsigned char *p;
+
+    for( i = j = n = 0; i < slen; i++ )
+    {
+        if( ( slen - i ) >= 2 &&
+            src[i] == '\r' && src[i + 1] == '\n' )
+            continue;
+
+        if( src[i] == '\n' )
+            continue;
+
+        if( src[i] == '=' && ++j > 2 )
+            return( POLARSSL_ERR_BASE64_INVALID_CHARACTER );
+
+        if( src[i] > 127 || base64_dec_map[src[i]] == 127 )
+            return( POLARSSL_ERR_BASE64_INVALID_CHARACTER );
+
+        if( base64_dec_map[src[i]] < 64 && j != 0 )
+            return( POLARSSL_ERR_BASE64_INVALID_CHARACTER );
+
+        n++;
+    }
+
+    if( n == 0 )
+        return( 0 );
+
+    n = ((n * 6) + 7) >> 3;
+
+    if( *dlen < n )
+    {
+        *dlen = n;
+        return( POLARSSL_ERR_BASE64_BUFFER_TOO_SMALL );
+    }
+
+   for( j = 3, n = x = 0, p = dst; i > 0; i--, src++ )
+   {
