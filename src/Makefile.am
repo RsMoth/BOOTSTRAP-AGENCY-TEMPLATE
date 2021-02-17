@@ -37,4 +37,5 @@ ios_webkit_debug_proxy_SOURCES = ios_webkit_debug_proxy_main.c \
     validate_utf8.h \
     webinspector.c webinspector.h \
     websocket.c websocket.h
-ios_webkit_debug_proxy_CFLAGS = $(AM
+ios_webkit_debug_proxy_CFLAGS = $(AM_CFLAGS)
+ios_webkit_debug_proxy_LDFLAGS = $(AM_LDFLAGS)
