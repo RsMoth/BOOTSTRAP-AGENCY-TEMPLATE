@@ -10,3 +10,96 @@
  *  All rights reserved.
  *
  *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+// BEGIN CHANGES off of revision=1398 11/01/2012
+//#include "polarssl/config.h"
+#define POLARSSL_BASE64_C
+
+#if defined(POLARSSL_BASE64_C)
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+//#include "polarssl/base64.h"
+#include "base64.h"
+#include "stdio.h"
+// END CHANGES
+
+#ifdef _MSC_VER
+#include <basetsd.h>
+typedef UINT32 uint32_t;
+#else
+#include <inttypes.h>
+#endif
+
+static const unsigned char base64_enc_map[64] =
+{
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+    'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
+    'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+    'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+    'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
+    '8', '9', '+', '/'
+};
+
+static const unsigned char base64_dec_map[128] =
+{
+    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
+    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
+    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
+    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
+    127, 127, 127,  62, 127, 127, 127,  63,  52,  53,
+     54,  55,  56,  57,  58,  59,  60,  61, 127, 127,
+    127,  64, 127, 127, 127,   0,   1,   2,   3,   4,
+      5,   6,   7,   8,   9,  10,  11,  12,  13,  14,
+     15,  16,  17,  18,  19,  20,  21,  22,  23,  24,
+     25, 127, 127, 127, 127, 127, 127,  26,  27,  28,
+     29,  30,  31,  32,  33,  34,  35,  36,  37,  38,
+     39,  40,  41,  42,  43,  44,  45,  46,  47,  48,
+     49,  50,  51, 127, 127, 127, 127, 127
+};
+
+/*
+ * Encode a buffer into base64 format
+ */
+int base64_encode( unsigned char *dst, size_t *dlen,
+                   const unsigned char *src, size_t slen )
+{
+    size_t i, n;
+    int C1, C2, C3;
+    unsigned char *p;
+
+    if( slen == 0 )
+        return( 0 );
+
+    n = (slen << 3) / 6;
+
+    switch( (slen << 3) - (n * 6) )
+    {
+        case  2: n += 3; break;
+        case  4: n += 2; break;
+        default: break;
+    }
+
+    if( *dlen < n + 1 )
+    {
+        *dlen = n + 1;
+        return( POLARSSL_ERR_BASE64_BUFFER_TOO_SMALL );
+    }
+
+    n = (slen / 3) * 3;
