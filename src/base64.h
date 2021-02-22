@@ -6,4 +6,7 @@
  *  Copyright (C) 2006-2010, Brainspark B.V.
  *
  *  This file is part of PolarSSL (http://www.polarssl.org)
- *  Le
+ *  Lead Maintainer: Paul Bakker <polarssl_maintainer at polarssl.org>
+ *
+ *  All rights reserved.
+ *
