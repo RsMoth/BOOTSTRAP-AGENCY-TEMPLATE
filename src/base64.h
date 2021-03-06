@@ -37,4 +37,7 @@ extern "C" {
 #endif
 
 /**
- * \brief          Encode a buffer into base64 
+ * \brief          Encode a buffer into base64 format
+ *
+ * \param dst      destination buffer
+ * \param dlen     size of
