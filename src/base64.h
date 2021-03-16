@@ -42,4 +42,6 @@ extern "C" {
  * \param dst      destination buffer
  * \param dlen     size of the buffer
  * \param src      source buffer
- * \param slen     amount of data to 
+ * \param slen     amount of data to be encoded
+ *
+ * \return         0 if successful, or POLARSSL_ERR_BASE64_BUFFER_TOO_SMALL.
