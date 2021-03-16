@@ -45,3 +45,5 @@ extern "C" {
  * \param slen     amount of data to be encoded
  *
  * \return         0 if successful, or POLARSSL_ERR_BASE64_BUFFER_TOO_SMALL.
+ *                 *dlen is always updated to reflect the amount
+ *                 of dat
