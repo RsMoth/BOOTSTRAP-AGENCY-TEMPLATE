@@ -40,4 +40,6 @@ extern "C" {
  * \brief          Encode a buffer into base64 format
  *
  * \param dst      destination buffer
- * \param dlen     size of
+ * \param dlen     size of the buffer
+ * \param src      source buffer
+ * \param slen     amount of data to 
