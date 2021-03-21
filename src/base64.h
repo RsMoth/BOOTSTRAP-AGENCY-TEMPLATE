@@ -64,4 +64,5 @@ int base64_encode( unsigned char *dst, size_t *dlen,
  *
  * \return         0 if successful, POLARSSL_ERR_BASE64_BUFFER_TOO_SMALL, or
  *                 POLARSSL_ERR_BASE64_INVALID_DATA if the input data is not
- *                 correct. *dlen is 
+ *                 correct. *dlen is always updated to reflect the amount
+ *                 of data that has (or would ha
