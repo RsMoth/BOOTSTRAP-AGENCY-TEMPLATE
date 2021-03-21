@@ -48,4 +48,7 @@ extern "C" {
  *                 *dlen is always updated to reflect the amount
  *                 of data that has (or would have) been written.
  *
- * \note           Call this function with *dlen
+ * \note           Call this function with *dlen = 0 to obtain the
+ *                 required buffer size in *dlen
+ */
+int base64_encode( 
