@@ -57,4 +57,7 @@ int base64_encode( unsigned char *dst, size_t *dlen,
 /**
  * \brief          Decode a base64-formatted buffer
  *
- * \param dst      destination 
+ * \param dst      destination buffer
+ * \param dlen     size of the buffer
+ * \param src      source buffer
+ * \param sl
