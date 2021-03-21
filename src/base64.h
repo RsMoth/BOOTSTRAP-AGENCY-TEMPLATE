@@ -52,4 +52,9 @@ extern "C" {
  *                 required buffer size in *dlen
  */
 int base64_encode( unsigned char *dst, size_t *dlen,
-                   const unsigned char *src, size_t
+                   const unsigned char *src, size_t slen );
+
+/**
+ * \brief          Decode a base64-formatted buffer
+ *
+ * \param dst      destination 
