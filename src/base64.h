@@ -60,4 +60,6 @@ int base64_encode( unsigned char *dst, size_t *dlen,
  * \param dst      destination buffer
  * \param dlen     size of the buffer
  * \param src      source buffer
- * \param sl
+ * \param slen     amount of data to be decoded
+ *
+ * \return         0 if successf
