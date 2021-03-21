@@ -62,4 +62,5 @@ int base64_encode( unsigned char *dst, size_t *dlen,
  * \param src      source buffer
  * \param slen     amount of data to be decoded
  *
- * \return         0 if successf
+ * \return         0 if successful, POLARSSL_ERR_BASE64_BUFFER_TOO_SMALL, or
+ *                 POLARSSL_E
