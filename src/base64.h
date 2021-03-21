@@ -51,4 +51,5 @@ extern "C" {
  * \note           Call this function with *dlen = 0 to obtain the
  *                 required buffer size in *dlen
  */
-int base64_encode( 
+int base64_encode( unsigned char *dst, size_t *dlen,
+                   const unsigned char *src, size_t
