@@ -46,4 +46,6 @@ extern "C" {
  *
  * \return         0 if successful, or POLARSSL_ERR_BASE64_BUFFER_TOO_SMALL.
  *                 *dlen is always updated to reflect the amount
- *                 of dat
+ *                 of data that has (or would have) been written.
+ *
+ * \note           Call this function with *dlen
