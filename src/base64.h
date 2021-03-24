@@ -70,4 +70,7 @@ int base64_encode( unsigned char *dst, size_t *dlen,
  * \note           Call this function with *dlen = 0 to obtain the
  *                 required buffer size in *dlen
  */
-int base64_decode( unsigned char *dst, 
+int base64_decode( unsigned char *dst, size_t *dlen,
+                   const unsigned char *src, size_t slen );
+
+/*
