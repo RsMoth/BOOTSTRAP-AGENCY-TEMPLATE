@@ -73,4 +73,7 @@ int base64_encode( unsigned char *dst, size_t *dlen,
 int base64_decode( unsigned char *dst, size_t *dlen,
                    const unsigned char *src, size_t slen );
 
-/*
+/**
+ * \brief          Checkup routine
+ *
+ * \return         0 if successful, or 1 if the t
