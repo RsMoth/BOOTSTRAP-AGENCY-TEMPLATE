@@ -68,4 +68,6 @@ int base64_encode( unsigned char *dst, size_t *dlen,
  *                 of data that has (or would have) been written.
  *
  * \note           Call this function with *dlen = 0 to obtain the
- *
+ *                 required buffer size in *dlen
+ */
+int base64_decode( unsigned char *dst, 
