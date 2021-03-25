@@ -76,4 +76,12 @@ int base64_decode( unsigned char *dst, size_t *dlen,
 /**
  * \brief          Checkup routine
  *
- * \return         0 if successful, or 1 if the t
+ * \return         0 if successful, or 1 if the test failed
+ */
+int base64_self_test( int verbose );
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* base64.
