@@ -85,3 +85,88 @@ int cb_ensure_capacity(cb_t self, size_t needed) {
     }
   }
   return 0;
+}
+
+int cb_begin_input(cb_t self, const char *buf, ssize_t length) {
+  if (!buf || length < 0) {
+    return -1;
+  }
+  // Instead of always doing a memcpy into our buffer, see if we can
+  // use the buf as-is
+  int can_share = (!self->begin || self->tail == self->head);
+  if (can_share) {
+    self->in_head = buf;
+    self->in_tail = buf + length;
+  } else {
+    if (cb_ensure_capacity(self, length)) {
+      return -1;
+    }
+    if (length > 0) {
+      memcpy(self->tail, buf, length);
+      self->tail += length;
+    }
+    self->in_head = self->head;
+    self->in_tail = self->tail;
+  }
+  return 0;
+}
+
+int cb_end_input(cb_t self) {
+  int did_share = (!self->begin || self->in_tail != self->tail);
+  if (did_share) {
+    size_t length = self->in_tail - self->in_head;
+    if (length > 0) {
+      // We used the input buf as-is, but some bytes remain, so save them
+      if (cb_ensure_capacity(self, length)) {
+        return -1;
+      }
+      memcpy(self->tail, self->in_head, length);
+      self->tail += length;
+    }
+  } else {
+    self->head += self->in_head - self->head;
+  }
+  self->in_head = NULL;
+  self->in_tail = NULL;
+  return 0;
+}
+
+// similar to socat output, e.g.:
+// 47 45 54 20 2F 64 65 76 74 6F 6F 6C 73 2F 49 6D 61 67 65  GET /devtools/Image
+// ...
+size_t cb_sprint(char *to_buf, const char *buf, ssize_t length,
+    ssize_t max_width, ssize_t max_lines) {
+  if (length <= 0) {
+    if (to_buf) {
+      *to_buf = '\0';
+    }
+    return 0;
+  }
+
+  char *s = to_buf;
+  size_t n = 0;
+
+#define APPEND(v) if (s) { *s++ = (v); } n++
+
+  size_t i = 0;
+  size_t num_lines = 0;
+
+  size_t chars_per_line;
+  if (max_width >= 0) {
+    chars_per_line = (max_width > 6 ? ((max_width - 2) >> 2) : 1);
+  } else {
+    size_t max_cpl = 1;
+    size_t curr_cpl = 0;
+    for (i = 0; i < length; i++) {
+      unsigned char ch = buf[i++];
+      curr_cpl++;
+      if (ch == '\n') {
+        if (curr_cpl > max_cpl) {
+          max_cpl = curr_cpl;
+        }
+        if (max_lines >= 0 && ++num_lines > max_lines) {
+          break;
+        }
+        curr_cpl = 0;
+      }
+    }
