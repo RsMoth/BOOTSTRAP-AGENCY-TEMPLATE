@@ -84,4 +84,4 @@ int base64_self_test( int verbose );
 }
 #endif
 
-#endif /* base64.
+#endif /* base64.h */
