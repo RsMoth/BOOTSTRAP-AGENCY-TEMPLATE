@@ -170,3 +170,89 @@ size_t cb_sprint(char *to_buf, const char *buf, ssize_t length,
         curr_cpl = 0;
       }
     }
+    chars_per_line = max_cpl;
+  }
+
+  i = 0;
+  num_lines = 0;
+  while (1) {
+    size_t j;
+    size_t rem = chars_per_line;
+    for (j = i; j < length && rem; ) {
+      unsigned char ch = buf[j++];
+      static const char* hexchars = "0123456789ABCDEF";
+      APPEND(' ');
+      APPEND(hexchars[(ch >> 4) & 0xF]);
+      APPEND(hexchars[ch & 0xF]);
+      rem--;
+      if (ch == '\n') {
+        break;
+      }
+    }
+    size_t rem2 = rem;
+    for (rem2 = rem; rem2 > 0; rem2--) {
+      APPEND(' ');
+      APPEND(' ');
+      APPEND(' ');
+    }
+    APPEND(' ');
+    APPEND(' ');
+    while (i < j) {
+      unsigned char ch = buf[i++];
+      APPEND(ch < 32 || ch > 126 ? '.' : ch);
+    }
+    if (i >= length) {
+      break;
+    }
+    if (max_lines >= 0 && ++num_lines > max_lines) {
+      for (rem2 = rem; rem2 > 0; rem2--) {
+        APPEND(' ');
+      }
+      APPEND(' ');
+      APPEND('+');
+      if (s) {
+        size_t k = sprintf(s, "%zd", length - i);
+        s += k;
+        n += k;
+      } else {
+        n += (int)(log10(length - i) + 0.5) + 1;
+      }
+      break;
+    }
+    APPEND('\n');
+  }
+  if (s) {
+    *s++ = '\0';
+  }
+  return n;
+}
+
+int cb_asprint(char **ret, const char *buf, ssize_t length,
+    ssize_t max_width, ssize_t max_lines) {
+  size_t n = cb_sprint(NULL, buf, length, max_width, max_lines);
+  *ret = (char *)malloc((n+1) * sizeof(char));
+  if (!*ret) {
+    return -1;
+  }
+  return cb_sprint(*ret, buf, length, max_width, max_lines);
+}
+
+int hex2int(char c) {
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  else if (c >= 'a' && c <= 'f')
+    return 10 + c - 'a';
+  else if (c >= 'A' && c <= 'F')
+    return 10 + c - 'A';
+  else
+    return -1;
+}
+
+int cb_sscan(char *to_buf, size_t *to_length, const char *buf) {
+  if (!to_buf || !to_length || !buf) {
+    return -1;
+  }
+  *to_length = 0;
+  const char *f = buf;
+  char *t = to_buf;
+  while (*f) {
