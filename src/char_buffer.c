@@ -256,3 +256,54 @@ int cb_sscan(char *to_buf, size_t *to_length, const char *buf) {
   const char *f = buf;
   char *t = to_buf;
   while (*f) {
+    for (; *f == ' '; f++) {
+    }
+    while (*f != ' ' && *f != '\n') {
+      int h0 = (*f ? hex2int(*f++) : -1);
+      int h1 = (*f ? hex2int(*f++) : -1);
+      char ch = (*f ? *f++ : '\0');
+      if (h0 < 0 || h1 < 0 || ch != ' ') {
+        return -1;
+      }
+      *t++ = (h0 << 4) | h1;
+      *to_length += 1;
+    }
+    if (*f == ' ') {
+      while (*++f && *f != '\n') {
+      }
+    }
+    if (*f && *f++ != '\n') {
+      return -1;
+    }
+  }
+  return 0;
+}
+
+int cb_asscan(char **ret, size_t *to_length, const char *buf) {
+  if (!ret || !*ret || !to_length || !buf) {
+    return -1;
+  }
+  *ret = (char *)calloc(strlen(buf) + 1, sizeof(char));
+  int rval = cb_sscan(*ret, to_length, buf);
+  if (*ret && to_length) {
+    *ret = (char*)realloc(*ret, *to_length * sizeof(char));
+  }
+  return rval;
+}
+
+#ifndef __MACH__
+char *strnstr(const char *s1, const char *s2, size_t n) {
+  size_t len = strlen(s2);
+  if (n >= len) {
+    char c = *s2;
+    const char *end = s1 + (n - len);
+    const char *s;
+    for (s = s1; *s && s <= end; s++) {
+      if (*s == c && !strncmp(s, s2, len)) {
+        return (char *)s;
+      }
+    }
+  }
+  return NULL;
+}
+#endif
