@@ -7,4 +7,9 @@
 
 #define _GNU_SOURCE
 #include <errno.h>
-#include <getopt.h
+#include <getopt.h>
+#include <math.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <str
