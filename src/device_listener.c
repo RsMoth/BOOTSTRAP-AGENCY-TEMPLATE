@@ -18,4 +18,9 @@
 #ifdef WIN32
 #include <winsock2.h>
 #else
-#include <resolv.h
+#include <resolv.h>
+#include <sys/fcntl.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/un.h>
+#endif
