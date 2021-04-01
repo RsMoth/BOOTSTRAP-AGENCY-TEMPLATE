@@ -12,4 +12,10 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <str
+#include <string.h>
+#include <unistd.h>
+
+#ifdef WIN32
+#include <winsock2.h>
+#else
+#include <resolv.h
