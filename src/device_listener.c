@@ -24,3 +24,9 @@
 #include <sys/stat.h>
 #include <sys/un.h>
 #endif
+
+#include <plist/plist.h>
+
+#include "char_buffer.h"
+#include "hash_table.h"
+#include "device_lis
