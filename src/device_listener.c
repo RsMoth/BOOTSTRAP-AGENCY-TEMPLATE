@@ -29,4 +29,8 @@
 
 #include "char_buffer.h"
 #include "hash_table.h"
-#include "device_lis
+#include "device_listener.h"
+
+//
+// We can't use libusbmuxd's
+//     int usbmuxd_subscribe(usbmuxd_event_c
