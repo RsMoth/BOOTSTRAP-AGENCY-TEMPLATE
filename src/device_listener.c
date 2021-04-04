@@ -35,4 +35,5 @@
 // We can't use libusbmuxd's
 //     int usbmuxd_subscribe(usbmuxd_event_cb_t callback, void *user_data)
 // because it's threaded and does blocking reads, but we want a
+// select-friendly fd that we can loop-unroll.  Fortunately this is relatively
 /
