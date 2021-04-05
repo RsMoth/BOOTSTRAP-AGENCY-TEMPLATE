@@ -40,4 +40,10 @@
 //
 
 #define USBMUXD_SOCKET_PORT 27015
-#define USBMUXD_FILE_PATH "/var/run/usbmux
+#define USBMUXD_FILE_PATH "/var/run/usbmuxd"
+#define TYPE_PLIST 8
+#define LIBUSBMUX_VERSION 3
+
+struct dl_private {
+  cb_t in;
+  ht_t devi
