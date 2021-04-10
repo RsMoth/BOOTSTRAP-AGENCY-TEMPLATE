@@ -46,4 +46,9 @@
 
 struct dl_private {
   cb_t in;
-  ht_t devi
+  ht_t device_num_to_device_id;
+  bool has_length;
+  size_t body_length;
+};
+
+int dl_connect(int recv_t
