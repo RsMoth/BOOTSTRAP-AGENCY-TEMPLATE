@@ -55,4 +55,5 @@ int dl_connect(int recv_timeout) {
   int fd = -1;
 #ifdef WIN32
   fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  if
+  if (fd == INVALID_SOCKET) {
+    fprintf(stderr, "device_listener: socket function failed wi
