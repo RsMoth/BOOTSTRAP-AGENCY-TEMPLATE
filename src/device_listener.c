@@ -56,4 +56,9 @@ int dl_connect(int recv_timeout) {
 #ifdef WIN32
   fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (fd == INVALID_SOCKET) {
-    fprintf(stderr, "device_listener: socket function failed wi
+    fprintf(stderr, "device_listener: socket function failed with\
+        error %d\n", WSAGetLastError());
+    return -1;
+  }
+
+  struct hoste
