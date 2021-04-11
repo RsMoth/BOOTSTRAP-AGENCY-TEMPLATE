@@ -51,4 +51,8 @@ struct dl_private {
   size_t body_length;
 };
 
-int dl_connect(int recv_t
+int dl_connect(int recv_timeout) {
+  int fd = -1;
+#ifdef WIN32
+  fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  if
