@@ -61,4 +61,7 @@ int dl_connect(int recv_timeout) {
     return -1;
   }
 
-  struct hoste
+  struct hostent *host;
+  host = gethostbyname("localhost");
+  if (host == NULL) {
+    fprintf(stderr, "devic
