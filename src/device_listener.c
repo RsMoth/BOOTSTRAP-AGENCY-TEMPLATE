@@ -64,4 +64,6 @@ int dl_connect(int recv_timeout) {
   struct hostent *host;
   host = gethostbyname("localhost");
   if (host == NULL) {
-    fprintf(stderr, "devic
+    fprintf(stderr, "device_listener: gethostbyname function failed with\
+        error %d\n", WSAGetLastError());
+    
