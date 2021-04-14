@@ -66,4 +66,9 @@ int dl_connect(int recv_timeout) {
   if (host == NULL) {
     fprintf(stderr, "device_listener: gethostbyname function failed with\
         error %d\n", WSAGetLastError());
-    
+    closesocket(fd);
+    return -2;
+  }
+
+  struct sockaddr_in local;
+  local.sin_family = AF_I
