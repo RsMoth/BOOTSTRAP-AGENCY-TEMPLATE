@@ -73,4 +73,6 @@ int dl_connect(int recv_timeout) {
   struct sockaddr_in local;
   local.sin_family = AF_INET;
   local.sin_addr.s_addr = *(uint32_t *)host->h_addr;
-  local.sin_port = htons(U
+  local.sin_port = htons(USBMUXD_SOCKET_PORT);
+
+  if (connect(fd, (SOCKADDR *)&local, sizeof(local)) == 
