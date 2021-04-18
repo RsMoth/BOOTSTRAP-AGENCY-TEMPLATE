@@ -75,4 +75,6 @@ int dl_connect(int recv_timeout) {
   local.sin_addr.s_addr = *(uint32_t *)host->h_addr;
   local.sin_port = htons(USBMUXD_SOCKET_PORT);
 
-  if (connect(fd, (SOCKADDR *)&local, sizeof(local)) == 
+  if (connect(fd, (SOCKADDR *)&local, sizeof(local)) == SOCKET_ERROR) {
+    fprintf(stderr, "device_listener: connect function failed with\
+        error 
