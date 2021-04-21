@@ -77,4 +77,9 @@ int dl_connect(int recv_timeout) {
 
   if (connect(fd, (SOCKADDR *)&local, sizeof(local)) == SOCKET_ERROR) {
     fprintf(stderr, "device_listener: connect function failed with\
-        error 
+        error %d\n", WSAGetLastError());
+    closesocket(fd);
+    return -2;
+  }
+
+  if (recv_timeout < 0) 
