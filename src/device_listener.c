@@ -82,4 +82,7 @@ int dl_connect(int recv_timeout) {
     return -2;
   }
 
-  if (recv_timeout < 0) 
+  if (recv_timeout < 0) {
+    u_long nb = 1;
+    if (ioctlsocket(fd, FIONBIO, &nb)) {
+      fprintf(stderr, "de
