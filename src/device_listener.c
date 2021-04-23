@@ -85,4 +85,8 @@ int dl_connect(int recv_timeout) {
   if (recv_timeout < 0) {
     u_long nb = 1;
     if (ioctlsocket(fd, FIONBIO, &nb)) {
-      fprintf(stderr, "de
+      fprintf(stderr, "device_listener: could not set socket to non-blocking");
+    }
+  }
+#else
+  const char *fil
