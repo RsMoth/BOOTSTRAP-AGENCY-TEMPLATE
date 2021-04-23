@@ -92,4 +92,6 @@ int dl_connect(int recv_timeout) {
   const char *filename = USBMUXD_FILE_PATH;
   struct stat fst;
   if (stat(filename, &fst) ||
-      !S_ISSOC
+      !S_ISSOCK(fst.st_mode) ||
+      (fd = socket(PF_LOCAL, SOCK_STREAM, 0)) < 0) {
+    r
