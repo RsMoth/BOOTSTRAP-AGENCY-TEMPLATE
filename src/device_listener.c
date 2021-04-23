@@ -89,4 +89,7 @@ int dl_connect(int recv_timeout) {
     }
   }
 #else
-  const char *fil
+  const char *filename = USBMUXD_FILE_PATH;
+  struct stat fst;
+  if (stat(filename, &fst) ||
+      !S_ISSOC
