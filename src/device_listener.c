@@ -94,4 +94,9 @@ int dl_connect(int recv_timeout) {
   if (stat(filename, &fst) ||
       !S_ISSOCK(fst.st_mode) ||
       (fd = socket(PF_LOCAL, SOCK_STREAM, 0)) < 0) {
-    r
+    return -1;
+  }
+
+  struct sockaddr_un name;
+  name.sun_family = AF_LOCAL;
+  strncpy
