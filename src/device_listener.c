@@ -103,4 +103,9 @@ int dl_connect(int recv_timeout) {
   name.sun_path[sizeof(name.sun_path) - 1] = 0;
   size_t size = SUN_LEN(&name);
   if (connect(fd, (struct sockaddr *)&name, size) < 0) {
-    c
+    close(fd);
+    return -1;
+  }
+
+  if (recv_timeout < 0) {
+    int opts = fcntl(fd, F_GETF
