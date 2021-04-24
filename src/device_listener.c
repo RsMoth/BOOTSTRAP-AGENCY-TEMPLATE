@@ -100,4 +100,7 @@ int dl_connect(int recv_timeout) {
   struct sockaddr_un name;
   name.sun_family = AF_LOCAL;
   strncpy(name.sun_path, filename, sizeof(name.sun_path));
-  name.sun_path[sizeof(name.sun_path) - 1]
+  name.sun_path[sizeof(name.sun_path) - 1] = 0;
+  size_t size = SUN_LEN(&name);
+  if (connect(fd, (struct sockaddr *)&name, size) < 0) {
+    c
