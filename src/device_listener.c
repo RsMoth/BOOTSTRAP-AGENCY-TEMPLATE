@@ -115,4 +115,6 @@ int dl_connect(int recv_timeout) {
   }
 #endif
   else {
-    long millis = (recv_timeout
+    long millis = (recv_timeout > 0 ? recv_timeout : 5000);
+    struct timeval tv;
+    tv.tv_sec = (time_t) (millis / 1000
