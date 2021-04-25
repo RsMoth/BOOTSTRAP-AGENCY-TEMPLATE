@@ -108,4 +108,6 @@ int dl_connect(int recv_timeout) {
   }
 
   if (recv_timeout < 0) {
-    int opts = fcntl(fd, F_GETF
+    int opts = fcntl(fd, F_GETFL);
+    if (!opts || fcntl(fd, F_SETFL, (opts | O_NONBLOCK)) < 0) {
+      perror("Could no
