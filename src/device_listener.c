@@ -119,4 +119,6 @@ int dl_connect(int recv_timeout) {
     struct timeval tv;
     tv.tv_sec = (time_t) (millis / 1000);
     tv.tv_usec = (time_t) ((millis - (tv.tv_sec * 1000)) * 1000);
-    if (setsock
+    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,
+          sizeof(tv))) {
+   
