@@ -127,4 +127,8 @@ int dl_connect(int recv_timeout) {
   return fd;
 }
 
-char *dl_sprintf_uint32(char *
+char *dl_sprintf_uint32(char *buf, uint32_t value) {
+  char *tail = buf;
+  int8_t i;
+  for (i = 0; i < 4; i++) {
+    *tail++ =
