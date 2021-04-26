@@ -121,4 +121,10 @@ int dl_connect(int recv_timeout) {
     tv.tv_usec = (time_t) ((millis - (tv.tv_sec * 1000)) * 1000);
     if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,
           sizeof(tv))) {
-   
+      perror("Could not set socket receive timeout");
+    }
+  }
+  return fd;
+}
+
+char *dl_sprintf_uint32(char *
