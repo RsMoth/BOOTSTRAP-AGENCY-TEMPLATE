@@ -131,4 +131,9 @@ char *dl_sprintf_uint32(char *buf, uint32_t value) {
   char *tail = buf;
   int8_t i;
   for (i = 0; i < 4; i++) {
-    *tail++ =
+    *tail++ = (unsigned char)((value >> (i<<3)) & 0xFF);
+  }
+  return tail;
+}
+
+dl_status dl_start(dl_t self) {
