@@ -140,4 +140,5 @@ dl_status dl_start(dl_t self) {
   // Assume usbmuxd supports proto_version 1.  If not then we'd need to
   // send a binary listen request, check for failure, then retry this:
   plist_t dict = plist_new_dict();
-  plis
+  plist_dict_set_item(dict, "ClientVersionString", plist_new_string(
+        "device_liste
