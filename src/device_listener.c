@@ -137,3 +137,5 @@ char *dl_sprintf_uint32(char *buf, uint32_t value) {
 }
 
 dl_status dl_start(dl_t self) {
+  // Assume usbmuxd supports proto_version 1.  If not then we'd need to
+  // send a binary l
