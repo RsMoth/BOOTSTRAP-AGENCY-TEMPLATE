@@ -138,4 +138,6 @@ char *dl_sprintf_uint32(char *buf, uint32_t value) {
 
 dl_status dl_start(dl_t self) {
   // Assume usbmuxd supports proto_version 1.  If not then we'd need to
-  // send a binary l
+  // send a binary listen request, check for failure, then retry this:
+  plist_t dict = plist_new_dict();
+  plis
