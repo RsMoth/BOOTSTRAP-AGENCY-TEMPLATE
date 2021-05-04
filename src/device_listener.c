@@ -141,4 +141,6 @@ dl_status dl_start(dl_t self) {
   // send a binary listen request, check for failure, then retry this:
   plist_t dict = plist_new_dict();
   plist_dict_set_item(dict, "ClientVersionString", plist_new_string(
-        "device_liste
+        "device_listener"));
+  if (plist_dict_get_size(dict) != 1) {
+    perror("Detected an old copy of
