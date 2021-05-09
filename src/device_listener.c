@@ -150,4 +150,7 @@ dl_status dl_start(dl_t self) {
   }
   plist_dict_set_item(dict, "MessageType", plist_new_string("Listen"));
   plist_dict_set_item(dict, "ProgName", plist_new_string("libusbmuxd"));
-  plist_dict_set_item(dict, "kLibUSBMuxVersion", plist_new_uin
+  plist_dict_set_item(dict, "kLibUSBMuxVersion", plist_new_uint(LIBUSBMUX_VERSION));
+  char *xml = NULL;
+  uint32_t xml_length = 0;
+  plist_to_xml(dict, &xml, &xml_l
