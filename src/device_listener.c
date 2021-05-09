@@ -149,4 +149,5 @@ dl_status dl_start(dl_t self) {
     return DL_ERROR;
   }
   plist_dict_set_item(dict, "MessageType", plist_new_string("Listen"));
-  plist_dict_set_item(dict, "ProgNam
+  plist_dict_set_item(dict, "ProgName", plist_new_string("libusbmuxd"));
+  plist_dict_set_item(dict, "kLibUSBMuxVersion", plist_new_uin
