@@ -145,3 +145,7 @@ dl_status dl_start(dl_t self) {
   if (plist_dict_get_size(dict) != 1) {
     perror("Detected an old copy of libplist?!  For a fix, see:\n"
         "https://github.com/libimobiledevice/libimobiledevice/issues/"
+        "68#issuecomment-38994545");
+    return DL_ERROR;
+  }
+  plist_dict_set_i
