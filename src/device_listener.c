@@ -157,4 +157,8 @@ dl_status dl_start(dl_t self) {
   plist_free(dict);
 
   size_t length = 16 + xml_length;
-  char *packet 
+  char *packet = (char *)calloc(length, sizeof(char));
+  if (!packet) {
+    return DL_ERROR;
+  }
+  char *tail =
