@@ -161,4 +161,6 @@ dl_status dl_start(dl_t self) {
   if (!packet) {
     return DL_ERROR;
   }
-  char *tail =
+  char *tail = packet;
+  tail = dl_sprintf_uint32(tail, length);
+  tail = dl_sprintf_uint32(tai
