@@ -153,4 +153,8 @@ dl_status dl_start(dl_t self) {
   plist_dict_set_item(dict, "kLibUSBMuxVersion", plist_new_uint(LIBUSBMUX_VERSION));
   char *xml = NULL;
   uint32_t xml_length = 0;
-  plist_to_xml(dict, &xml, &xml_l
+  plist_to_xml(dict, &xml, &xml_length);
+  plist_free(dict);
+
+  size_t length = 16 + xml_length;
+  char *packet 
