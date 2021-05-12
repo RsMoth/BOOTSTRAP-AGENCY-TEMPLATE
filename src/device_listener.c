@@ -163,4 +163,6 @@ dl_status dl_start(dl_t self) {
   }
   char *tail = packet;
   tail = dl_sprintf_uint32(tail, length);
-  tail = dl_sprintf_uint32(tai
+  tail = dl_sprintf_uint32(tail, 1); // version: 1
+  tail = dl_sprintf_uint32(tail, TYPE_PLIST); // type: plist
+  ta
