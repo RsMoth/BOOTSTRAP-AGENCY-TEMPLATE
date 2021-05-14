@@ -167,4 +167,8 @@ dl_status dl_start(dl_t self) {
   tail = dl_sprintf_uint32(tail, TYPE_PLIST); // type: plist
   tail = dl_sprintf_uint32(tail, 1); // tag: 1
   strncpy(tail, xml, xml_length);
-  free(xml)
+  free(xml);
+
+  dl_status ret = self->send_packet(self, packet, length);
+  free(packet);
+  
