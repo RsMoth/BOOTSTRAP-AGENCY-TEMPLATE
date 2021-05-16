@@ -171,4 +171,9 @@ dl_status dl_start(dl_t self) {
 
   dl_status ret = self->send_packet(self, packet, length);
   free(packet);
-  
+  return ret;
+}
+
+uint32_t dl_sscanf_uint32(const char *buf) {
+  uint32_t ret = 0;
+  const char *tail = buf;
