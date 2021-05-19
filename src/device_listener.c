@@ -177,3 +177,6 @@ dl_status dl_start(dl_t self) {
 uint32_t dl_sscanf_uint32(const char *buf) {
   uint32_t ret = 0;
   const char *tail = buf;
+  int8_t i;
+  for (i = 0; i < 4; i++) {
+    ret |= ((((unsigned char) *tail++) & 0xF
