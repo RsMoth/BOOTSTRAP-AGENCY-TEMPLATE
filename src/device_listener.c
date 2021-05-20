@@ -188,4 +188,7 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
   dl_private_t my = self->private_state;
 
   const char *tail = packet;
-  u
+  uint32_t len = dl_sscanf_uint32(tail);
+  tail += 4;
+  if (len != length || len < 16) {
+    return D
