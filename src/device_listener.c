@@ -184,4 +184,8 @@ uint32_t dl_sscanf_uint32(const char *buf) {
   return ret;
 }
 
-dl_status dl_recv_packet(dl_t self, const char *packet, size_t l
+dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
+  dl_private_t my = self->private_state;
+
+  const char *tail = packet;
+  u
