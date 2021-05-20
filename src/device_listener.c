@@ -191,4 +191,8 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
   uint32_t len = dl_sscanf_uint32(tail);
   tail += 4;
   if (len != length || len < 16) {
-    return D
+    return DL_ERROR;
+  }
+  uint32_t version = dl_sscanf_uint32(tail);
+  tail += 4;
+  uint32_t type = dl_sscanf_
