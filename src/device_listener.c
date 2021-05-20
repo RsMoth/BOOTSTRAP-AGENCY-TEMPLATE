@@ -179,4 +179,9 @@ uint32_t dl_sscanf_uint32(const char *buf) {
   const char *tail = buf;
   int8_t i;
   for (i = 0; i < 4; i++) {
-    ret |= ((((unsigned char) *tail++) & 0xF
+    ret |= ((((unsigned char) *tail++) & 0xFF) << (i<<3));
+  }
+  return ret;
+}
+
+dl_status dl_recv_packet(dl_t self, const char *packet, size_t l
