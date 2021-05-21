@@ -202,4 +202,9 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
   const char *xml = tail;
   size_t xml_length = length - 16;
 
-  if (version != 1 || type != TYPE_P
+  if (version != 1 || type != TYPE_PLIST) {
+    return DL_SUCCESS; // ignore?
+  }
+
+  plist_t dict = NULL;
+  plist_from_xml(xml, xm
