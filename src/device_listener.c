@@ -195,4 +195,8 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
   }
   uint32_t version = dl_sscanf_uint32(tail);
   tail += 4;
-  uint32_t type = dl_sscanf_
+  uint32_t type = dl_sscanf_uint32(tail);
+  tail += 4;
+  (void)dl_sscanf_uint32(tail);
+  tail += 4;
+  const char *x
