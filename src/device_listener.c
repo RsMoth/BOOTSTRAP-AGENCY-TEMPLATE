@@ -199,4 +199,7 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
   tail += 4;
   (void)dl_sscanf_uint32(tail);
   tail += 4;
-  const char *x
+  const char *xml = tail;
+  size_t xml_length = length - 16;
+
+  if (version != 1 || type != TYPE_P
