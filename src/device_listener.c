@@ -207,4 +207,7 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
   }
 
   plist_t dict = NULL;
-  plist_from_xml(xml, xm
+  plist_from_xml(xml, xml_length, &dict);
+  char *message = NULL;
+  if (dict) {
+    plist_t n
