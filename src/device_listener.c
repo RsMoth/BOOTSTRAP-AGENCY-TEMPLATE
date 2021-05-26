@@ -211,4 +211,9 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
   char *message = NULL;
   if (dict) {
     plist_t node = plist_dict_get_item(dict, "MessageType");
-    if (plist_get_node_type(node) == P
+    if (plist_get_node_type(node) == PLIST_STRING) {
+      plist_get_string_val(node, &message);
+    }
+  }
+
+  dl_status ret = DL_E
