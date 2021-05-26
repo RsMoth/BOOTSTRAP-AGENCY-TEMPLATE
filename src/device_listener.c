@@ -220,4 +220,6 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
   if (!message) {
     ret = DL_ERROR;
   } else if (!strcmp(message, "Result")) {
-  
+    plist_t node = plist_dict_get_item(dict, "Number");
+    if (node) {
+      uint64_t value = 0
