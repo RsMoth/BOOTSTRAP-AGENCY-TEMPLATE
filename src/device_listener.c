@@ -210,4 +210,5 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
   plist_from_xml(xml, xml_length, &dict);
   char *message = NULL;
   if (dict) {
-    plist_t n
+    plist_t node = plist_dict_get_item(dict, "MessageType");
+    if (plist_get_node_type(node) == P
