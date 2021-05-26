@@ -216,4 +216,8 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
     }
   }
 
-  dl_status ret = DL_E
+  dl_status ret = DL_ERROR;
+  if (!message) {
+    ret = DL_ERROR;
+  } else if (!strcmp(message, "Result")) {
+  
