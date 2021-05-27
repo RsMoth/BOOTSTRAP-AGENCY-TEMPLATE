@@ -222,4 +222,7 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
   } else if (!strcmp(message, "Result")) {
     plist_t node = plist_dict_get_item(dict, "Number");
     if (node) {
-      uint64_t value = 0
+      uint64_t value = 0;
+      plist_get_uint_val(node, &value);
+      // just an ack of our Listen?
+      ret = (v
