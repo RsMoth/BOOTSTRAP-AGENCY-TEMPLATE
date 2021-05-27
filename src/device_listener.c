@@ -225,4 +225,6 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
       uint64_t value = 0;
       plist_get_uint_val(node, &value);
       // just an ack of our Listen?
-      ret = (v
+      ret = (value ? DL_ERROR : DL_SUCCESS);
+    }
+  } else if (!strcmp(message, 
