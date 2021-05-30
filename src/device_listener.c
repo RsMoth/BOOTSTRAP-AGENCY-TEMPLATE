@@ -227,4 +227,6 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
       // just an ack of our Listen?
       ret = (value ? DL_ERROR : DL_SUCCESS);
     }
-  } else if (!strcmp(message, 
+  } else if (!strcmp(message, "Attached")) {
+    plist_t props = plist_dict_get_item(dict, "Properties");
+    if (props) {
