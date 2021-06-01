@@ -235,4 +235,7 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
       plist_get_uint_val(node, &device_num);
 
       uint64_t product_id = 0;
- 
+      node = plist_dict_get_item(props, "ProductID");
+      plist_get_uint_val(node, &product_id);
+
+      char 
