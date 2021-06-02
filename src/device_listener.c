@@ -243,4 +243,5 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
       if (node) {
         plist_get_string_val(node, &device_id);
 
-        if (device_
+        if (device_id && strlen(device_id) == 24) {
+          char *new_device_id = malloc(sizeof(char) *
