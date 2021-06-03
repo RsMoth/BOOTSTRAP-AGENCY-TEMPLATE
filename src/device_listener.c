@@ -251,4 +251,9 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
           new_device_id[8] = '-';
 
           free(device_id);
-        
+          device_id = new_device_id;
+        }
+      }
+
+      uint64_t location = 0;
+      no
