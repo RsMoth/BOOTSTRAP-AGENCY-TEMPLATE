@@ -256,4 +256,7 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
       }
 
       uint64_t location = 0;
-      no
+      node = plist_dict_get_item(props, "LocationID");
+      plist_get_uint_val(node, &location);
+
+     
