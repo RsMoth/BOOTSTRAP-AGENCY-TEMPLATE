@@ -259,4 +259,5 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
       node = plist_dict_get_item(props, "LocationID");
       plist_get_uint_val(node, &location);
 
-     
+      ht_t d_ht = my->device_num_to_device_id;
+      ht_put(d_ht, HT_KEY(device_num), 
