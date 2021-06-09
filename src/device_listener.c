@@ -263,4 +263,6 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
       ht_put(d_ht, HT_KEY(device_num), device_id);
       ret = self->on_attach(self, device_id, (int)device_num);
     }
-  } else if (strcmp(mes
+  } else if (strcmp(message, "Detached") == 0) {
+    plist_t node = plist_dict_get_item(dict, "DeviceID");
+    if
