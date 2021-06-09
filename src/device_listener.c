@@ -269,4 +269,5 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
       uint64_t device_num = 0;
       plist_get_uint_val(node, &device_num);
 
-    
+      ht_t d_ht = my->device_num_to_device_id;
+      char *device_id = (char *)ht_remove(d_ht, HT_KEY(de
