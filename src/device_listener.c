@@ -284,4 +284,7 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
 
 dl_status dl_recv_loop(dl_t self) {
   dl_private_t my = self->private_state;
-  dl_status
+  dl_status ret;
+  const char *in_head = my->in->in_head;
+  const char *in_tail = my->in->in_tail;
+  while (
