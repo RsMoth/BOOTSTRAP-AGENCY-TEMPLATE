@@ -279,4 +279,9 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
   }
   free(message);
   plist_free(dict);
-  r
+  return ret;
+}
+
+dl_status dl_recv_loop(dl_t self) {
+  dl_private_t my = self->private_state;
+  dl_status
