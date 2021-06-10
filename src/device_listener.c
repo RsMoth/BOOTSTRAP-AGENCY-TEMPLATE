@@ -287,4 +287,7 @@ dl_status dl_recv_loop(dl_t self) {
   dl_status ret;
   const char *in_head = my->in->in_head;
   const char *in_tail = my->in->in_tail;
-  while (
+  while (1) {
+    size_t in_length = in_tail - in_head;
+    if (!my->has_length && in_length >= 4) {
+      // can read 
