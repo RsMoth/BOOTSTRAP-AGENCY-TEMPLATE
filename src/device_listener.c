@@ -272,4 +272,11 @@ dl_status dl_recv_packet(dl_t self, const char *packet, size_t length) {
       ht_t d_ht = my->device_num_to_device_id;
       char *device_id = (char *)ht_remove(d_ht, HT_KEY(device_num));
       if (device_id) {
-        ret = self->on_detach(self, device_id, (int)devi
+        ret = self->on_detach(self, device_id, (int)device_num);
+        free(device_id);
+      }
+    }
+  }
+  free(message);
+  plist_free(dict);
+  r
