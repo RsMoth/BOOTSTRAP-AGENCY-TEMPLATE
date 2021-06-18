@@ -295,4 +295,6 @@ dl_status dl_recv_loop(dl_t self) {
       my->body_length = len;
       my->has_length = true;
       // don't advance in_head yet
-    } e
+    } else if (my->has_length && in_length >= my->body_length) {
+      // can read body now
+      ret =
