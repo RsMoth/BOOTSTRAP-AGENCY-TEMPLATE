@@ -292,4 +292,7 @@ dl_status dl_recv_loop(dl_t self) {
     if (!my->has_length && in_length >= 4) {
       // can read body_length now
       size_t len = dl_sscanf_uint32(in_head);
-      my->
+      my->body_length = len;
+      my->has_length = true;
+      // don't advance in_head yet
+    } e
