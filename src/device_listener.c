@@ -299,4 +299,8 @@ dl_status dl_recv_loop(dl_t self) {
       // can read body now
       ret = dl_recv_packet(self, in_head, my->body_length);
       in_head += my->body_length;
-      my->
+      my->has_length = false;
+      my->body_length = 0;
+      if (ret) {
+        break;
+  
