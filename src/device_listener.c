@@ -303,4 +303,8 @@ dl_status dl_recv_loop(dl_t self) {
       my->body_length = 0;
       if (ret) {
         break;
-  
+      }
+    } else {
+      // need more input
+      ret = DL_SUCCESS;
+    
