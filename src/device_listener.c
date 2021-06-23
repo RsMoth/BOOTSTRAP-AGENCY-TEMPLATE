@@ -307,4 +307,11 @@ dl_status dl_recv_loop(dl_t self) {
     } else {
       // need more input
       ret = DL_SUCCESS;
-    
+      break;
+    }
+  }
+  my->in->in_head = in_head;
+  return ret;
+}
+
+dl_status dl_on_re
