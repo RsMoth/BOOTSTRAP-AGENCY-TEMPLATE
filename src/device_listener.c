@@ -316,4 +316,7 @@ dl_status dl_recv_loop(dl_t self) {
 
 dl_status dl_on_recv(dl_t self, const char *buf, ssize_t length) {
   dl_private_t my = self->private_state;
-  
+  if (length < 0) {
+    return DL_ERROR;
+  } else if (length == 0) {
+    return DL_S
