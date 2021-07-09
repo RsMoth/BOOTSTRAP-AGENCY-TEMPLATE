@@ -319,4 +319,9 @@ dl_status dl_on_recv(dl_t self, const char *buf, ssize_t length) {
   if (length < 0) {
     return DL_ERROR;
   } else if (length == 0) {
-    return DL_S
+    return DL_SUCCESS;
+  }
+  if (cb_begin_input(my->in, buf, length)) {
+    return DL_ERROR;
+  }
+  dl_st
