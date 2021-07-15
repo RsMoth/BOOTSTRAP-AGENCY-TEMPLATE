@@ -324,4 +324,7 @@ dl_status dl_on_recv(dl_t self, const char *buf, ssize_t length) {
   if (cb_begin_input(my->in, buf, length)) {
     return DL_ERROR;
   }
-  dl_st
+  dl_status ret = dl_recv_loop(self);
+  if (cb_end_input(my->in)) {
+    return DL_ERROR;
+  }
