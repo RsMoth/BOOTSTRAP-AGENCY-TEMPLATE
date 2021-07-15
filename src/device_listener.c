@@ -328,3 +328,9 @@ dl_status dl_on_recv(dl_t self, const char *buf, ssize_t length) {
   if (cb_end_input(my->in)) {
     return DL_ERROR;
   }
+  return ret;
+}
+
+
+dl_t dl_new() {
+  dl_t self = (dl_t)malloc(sizeof(struct dl_struc
