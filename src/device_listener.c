@@ -336,3 +336,6 @@ dl_t dl_new() {
   dl_t self = (dl_t)malloc(sizeof(struct dl_struct));
   dl_private_t my = (dl_private_t)malloc(sizeof(struct dl_private));
   cb_t in = cb_new();
+  ht_t d_ht = ht_new(HT_INT_KEYS);
+  if (!self || !my || !in || !d_ht) {
+    free(self);
