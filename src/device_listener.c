@@ -333,4 +333,6 @@ dl_status dl_on_recv(dl_t self, const char *buf, ssize_t length) {
 
 
 dl_t dl_new() {
-  dl_t self = (dl_t)malloc(sizeof(struct dl_struc
+  dl_t self = (dl_t)malloc(sizeof(struct dl_struct));
+  dl_private_t my = (dl_private_t)malloc(sizeof(struct dl_private));
+  cb_t in = cb_new();
