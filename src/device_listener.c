@@ -339,3 +339,8 @@ dl_t dl_new() {
   ht_t d_ht = ht_new(HT_INT_KEYS);
   if (!self || !my || !in || !d_ht) {
     free(self);
+    free(my);
+    free(in);
+    return NULL;
+  }
+  memset(self, 0, sizeof(struct dl_stru
