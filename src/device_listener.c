@@ -343,4 +343,7 @@ dl_t dl_new() {
     free(in);
     return NULL;
   }
-  memset(self, 0, sizeof(struct dl_stru
+  memset(self, 0, sizeof(struct dl_struct));
+  memset(my, 0, sizeof(struct dl_private));
+  self->start = dl_start;
+  self->on_recv = dl_o
