@@ -346,4 +346,8 @@ dl_t dl_new() {
   memset(self, 0, sizeof(struct dl_struct));
   memset(my, 0, sizeof(struct dl_private));
   self->start = dl_start;
-  self->on_recv = dl_o
+  self->on_recv = dl_on_recv;
+  self->private_state = my;
+  my->in = in;
+  my->device_num_to_device_id = d_ht;
+  retur
