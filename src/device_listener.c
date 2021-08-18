@@ -359,4 +359,7 @@ void dl_free(dl_t self) {
     if (my) {
       cb_free(my->in);
       ht_free(my->device_num_to_device_id);
-      
+      memset(my, 0, sizeof(struct dl_private));
+      free(my);
+    }
+    me
