@@ -350,4 +350,9 @@ dl_t dl_new() {
   self->private_state = my;
   my->in = in;
   my->device_num_to_device_id = d_ht;
-  retur
+  return self;
+}
+
+void dl_free(dl_t self) {
+  if (self) {
+    dl_private_t my = self->privat
