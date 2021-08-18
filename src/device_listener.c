@@ -355,4 +355,8 @@ dl_t dl_new() {
 
 void dl_free(dl_t self) {
   if (self) {
-    dl_private_t my = self->privat
+    dl_private_t my = self->private_state;
+    if (my) {
+      cb_free(my->in);
+      ht_free(my->device_num_to_device_id);
+      
