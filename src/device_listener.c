@@ -362,4 +362,7 @@ void dl_free(dl_t self) {
       memset(my, 0, sizeof(struct dl_private));
       free(my);
     }
-    me
+    memset(self, 0, sizeof(struct dl_struct));
+    free(self);
+  }
+}
