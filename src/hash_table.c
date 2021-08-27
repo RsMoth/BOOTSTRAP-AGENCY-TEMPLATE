@@ -98,3 +98,97 @@ void ht_find(ht_t self, const void *key, intptr_t *to_hc,
        curr->key == key));
       prev = curr, curr = curr->next) {
   }
+  *to_head = head;
+  *to_prev = prev;
+  *to_curr = curr;
+  if (to_hc) {
+    *to_hc = hc;
+  }
+  // Instead of setting a "prev", we could set a "pointer-to-current":
+  //     pp = head if no prev else &prev->next
+  // which would (e.g.) simplify our caller's removal code from:
+  //     if (prev) prev->next = curr->next; else *head = curr->next;
+  // to:
+  //     *pp = curr->next;
+  // but I think the explicit prev is easier to understand.
+}
+
+void *ht_get(ht_t self, const void *key, int want_key) {
+  ht_entry_t *head;
+  ht_entry_t prev;
+  ht_entry_t curr;
+  ht_find(self, key, NULL, &head, &prev, &curr);
+  if (!curr) {
+    return NULL;
+  }
+  if (prev) {
+    // optional move-to-front
+    prev->next = curr->next;
+    curr->next = *head;
+    *head = curr;
+  }
+  return (want_key ? curr->key : curr->value);
+}
+void *ht_get_key(ht_t self, const void *key) {
+  return ht_get(self, key, 1);
+}
+void *ht_get_value(ht_t self, const void *key) {
+  return ht_get(self, key, 0);
+}
+
+void *ht_remove(ht_t self, const void *key) {
+  ht_entry_t *head;
+  ht_entry_t prev;
+  ht_entry_t curr;
+  ht_find(self, key, NULL, &head, &prev, &curr);
+  void *ret = (curr ? curr->value : NULL);
+  if (curr) {
+    if (prev) {
+      prev->next = curr->next;
+    } else {
+      *head = curr->next;
+    }
+    free(curr);
+    self->num_keys--;
+  }
+  return ret;
+}
+
+void *ht_put(ht_t self, void *key, void *value) {
+  ht_entry_t *head;
+  ht_entry_t prev;
+  ht_entry_t curr;
+  intptr_t hc;
+  ht_find(self, key, &hc, &head, &prev, &curr);
+  void *ret = (curr ? curr->value : NULL);
+  if (curr) {
+    if (value) {
+      curr->value = value;
+    } else {
+      if (prev) {
+        prev->next = curr->next;
+      } else {
+        *head = curr->next;
+      }
+      free(curr);
+      self->num_keys--;
+    }
+  } else if (value) {
+    curr = (ht_entry_t)malloc(sizeof(struct ht_entry_struct));
+    // if (!curr) ?
+    memset(curr, 0, sizeof(struct ht_entry_struct));
+    curr->hc = hc;
+    curr->key = key;
+    curr->value = value;
+    curr->next = *head;
+    *head = curr;
+    self->num_keys++;
+  }
+  return ret;
+}
+
+void **ht_get_all(ht_t self, int want_key) {
+  void **ret = (void **)calloc(self->num_keys+1, sizeof(void *));
+  if (ret) {
+    void **tail = ret;
+    size_t i;
