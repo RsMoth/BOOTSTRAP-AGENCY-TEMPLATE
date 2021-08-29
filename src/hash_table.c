@@ -192,3 +192,18 @@ void **ht_get_all(ht_t self, int want_key) {
   if (ret) {
     void **tail = ret;
     size_t i;
+    for (i = 0; i < self->num_buckets; i++) {
+      ht_entry_t curr;
+      for (curr = self->buckets[i]; curr; curr = curr->next) {
+        *tail++ = (want_key ? curr->key : curr->value);
+      }
+    }
+  }
+  return ret;
+}
+void **ht_keys(ht_t self) {
+  return ht_get_all(self, 1);
+}
+void **ht_values(ht_t self) {
+  return ht_get_all(self, 0);
+}
