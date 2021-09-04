@@ -5,4 +5,13 @@
 // A generic hash table implementation
 //
 
-#ifndef HASH_TA
+#ifndef HASH_TABLE_H
+#define	HASH_TABLE_H
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
+
+// ca
