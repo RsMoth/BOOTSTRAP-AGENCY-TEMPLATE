@@ -14,4 +14,8 @@ extern "C" {
 
 #include <stdint.h>
 
-// ca
+// cast int to void*
+#define HT_KEY(i) ((void *)(intptr_t)i)
+#define HT_VALUE(i) HT_KEY(i)
+
+enum ht_
