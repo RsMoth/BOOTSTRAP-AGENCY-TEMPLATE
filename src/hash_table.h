@@ -18,4 +18,10 @@ extern "C" {
 #define HT_KEY(i) ((void *)(intptr_t)i)
 #define HT_VALUE(i) HT_KEY(i)
 
-enum ht_
+enum ht_key_type {
+  HT_INT_KEYS,
+  HT_STRING_KEYS
+};
+
+struct ht_entry_struct;
+typedef struct ht_ent
