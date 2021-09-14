@@ -24,4 +24,9 @@ enum ht_key_type {
 };
 
 struct ht_entry_struct;
-typedef struct ht_ent
+typedef struct ht_entry_struct *ht_entry_t;
+
+struct ht_struct;
+typedef struct ht_struct *ht_t;
+
+ht_t ht_new(enum ht
