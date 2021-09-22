@@ -39,4 +39,5 @@ void ht_free(ht_t self);
 // @result Returns number of keys
 size_t ht_size(ht_t self);
 
-voi
+void *ht_get_key(ht_t self, const void *key);
+void *ht_get_value(ht_t self,
