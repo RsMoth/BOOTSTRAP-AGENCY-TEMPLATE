@@ -34,4 +34,9 @@ ht_t ht_new(enum ht_key_type type);
 // note: doesn't free keys or values!
 void ht_clear(ht_t self);
 
-void ht_
+void ht_free(ht_t self);
+
+// @result Returns number of keys
+size_t ht_size(ht_t self);
+
+voi
