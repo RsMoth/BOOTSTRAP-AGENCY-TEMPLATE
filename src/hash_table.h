@@ -40,4 +40,8 @@ void ht_free(ht_t self);
 size_t ht_size(ht_t self);
 
 void *ht_get_key(ht_t self, const void *key);
-void *ht_get_value(ht_t self,
+void *ht_get_value(ht_t self, const void *key);
+
+void *ht_remove(ht_t self, const void *key);
+
+void *ht_put(ht_t self, void 
