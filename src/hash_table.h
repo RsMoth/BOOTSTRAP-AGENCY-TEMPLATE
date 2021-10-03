@@ -44,4 +44,6 @@ void *ht_get_value(ht_t self, const void *key);
 
 void *ht_remove(ht_t self, const void *key);
 
-void *ht_put(ht_t self, void 
+void *ht_put(ht_t self, void *key, void *value);
+
+// @result Returns a dynamically-allocated array of le
