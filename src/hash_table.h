@@ -46,4 +46,8 @@ void *ht_remove(ht_t self, const void *key);
 
 void *ht_put(ht_t self, void *key, void *value);
 
-// @result Returns a dynamically-allocated array of le
+// @result Returns a dynamically-allocated array of length ht_size+1
+void **ht_keys(ht_t self);
+void **ht_values(ht_t self);
+
+struct ht_struct {
