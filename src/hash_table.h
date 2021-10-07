@@ -62,4 +62,9 @@ struct ht_struct {
 };
 
 
-#ifdef	__cplusplu
+#ifdef	__cplusplus
+}
+#endif
+
+#endif	/* HASH_TABLE_H */
+
