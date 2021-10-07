@@ -52,4 +52,7 @@ void **ht_values(ht_t self);
 
 struct ht_struct {
   // Only need to set these if your using non-int keys:
-  intptr_t (*on_hash)(ht_t self, 
+  intptr_t (*on_hash)(ht_t self, const void *key);
+  intptr_t (*on_cmp)(ht_t self, const void *key1, const void *key2);
+
+  // For inte
