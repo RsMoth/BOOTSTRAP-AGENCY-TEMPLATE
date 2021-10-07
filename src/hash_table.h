@@ -55,4 +55,11 @@ struct ht_struct {
   intptr_t (*on_hash)(ht_t self, const void *key);
   intptr_t (*on_cmp)(ht_t self, const void *key1, const void *key2);
 
-  // For inte
+  // For internal use only:
+  size_t num_keys;
+  ht_entry_t *buckets;
+  size_t num_buckets;
+};
+
+
+#ifdef	__cplusplu
