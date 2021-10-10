@@ -49,3 +49,75 @@ struct iwdp_private {
 #define TYPE_IWI   3
 #define TYPE_IWS   4
 #define TYPE_IFS   5
+
+/*!
+ * Struct type id, for iwdp_on_recv/etc "switch" use.
+ *
+ * Each sub-struct has a "*_fd".
+ */
+typedef struct {
+  int type;
+} iwdp_type_struct;
+typedef iwdp_type_struct *iwdp_type_t;
+
+/*!
+ * Device add/remove listener.
+ */
+struct iwdp_idl_struct {
+  iwdp_type_struct type;
+  iwdp_t self;
+
+  dl_t dl;
+  int dl_fd;
+};
+iwdp_idl_t iwdp_idl_new();
+void iwdp_idl_free(iwdp_idl_t idl);
+
+struct iwdp_iwi_struct;
+typedef struct iwdp_iwi_struct *iwdp_iwi_t;
+
+/*!
+ * browser listener.
+ */
+struct iwdp_iport_struct {
+  iwdp_type_struct type;
+  iwdp_t self;
+
+  // browser port, e.g. 9222
+  int port;
+  int s_fd;
+
+  // true if iwdp_on_attach has succeeded and we should restore this port
+  // if the device is reattach
+  bool is_sticky;
+
+  // all websocket clients on this port
+  // key owned by iws->ws_id
+  ht_t ws_id_to_iws;
+
+  // iOS device_id, e.g. ddc86a518cd948e13bbdeadbeef00788ea35fcf9
+  char *device_id;
+  char *device_name;
+  int device_os_version;
+
+  // null if the device is detached
+  iwdp_iwi_t iwi;
+};
+
+typedef struct iwdp_iport_struct *iwdp_iport_t;
+iwdp_iport_t iwdp_iport_new();
+void iwdp_iport_free(iwdp_iport_t iport);
+char *iwdp_iports_to_text(iwdp_iport_t *iports, bool want_json,
+    const char *host);
+
+/*!
+ * WebInpsector.
+ */
+struct iwdp_iwi_struct {
+  iwdp_type_struct type;
+  iwdp_iport_t iport; // owner
+
+  // webinspector
+  wi_t wi;
+  int wi_fd;
+  char *connection_id;
