@@ -210,3 +210,86 @@ int iwdp_ipage_cmp(const void *a, const void *b);
 char *iwdp_ipages_to_text(iwdp_ipage_t *ipages, bool want_json,
     const char *device_id, const char *device_name,
     const char *frontend_url, const char *host, int port);
+
+// file extension to Content-Type
+const char *EXT_TO_MIME[][2] = {
+  {"css", "text/css"},
+  {"gif", "image/gif; charset=binary"},
+  {"html", "text/html; charset=UTF-8"},
+  {"ico", "image/x-icon"},
+  {"js", "application/javascript"},
+  {"json", "application/json; charset=UTF-8"},
+  {"png", "image/png; charset=binary"},
+  {"txt", "text/plain"},
+};
+iwdp_status iwdp_get_content_type(const char *path, bool is_local,
+    char **to_mime);
+
+ws_status iwdp_start_devtools(iwdp_ipage_t ipage, iwdp_iws_t iws);
+ws_status iwdp_stop_devtools(iwdp_ipage_t ipage);
+
+int iwdp_update_string(char **old_value, const char *new_value);
+
+//
+// logging
+//
+
+iwdp_status iwdp_on_error(iwdp_t self, const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  fprintf(stderr, "\n");
+  va_end(args);
+  return IWDP_ERROR;
+}
+
+void iwdp_log_connect(iwdp_iport_t iport) {
+  if (iport->device_id) {
+    printf("Connected :%d to %s (%s)\n", iport->port, iport->device_name,
+        iport->device_id);
+  } else {
+    printf("Listing devices on :%d\n", iport->port);
+  }
+}
+
+void iwdp_log_disconnect(iwdp_iport_t iport) {
+  if (iport->iwi && iport->iwi->connected) {
+    printf("Disconnected :%d from %s (%s)\n", iport->port,
+        iport->device_name, iport->device_id);
+  } else {
+    printf("Unable to connect to %s (%s)\n  Please"
+        " verify that Settings > Safari > Advanced > Web Inspector = ON\n",
+        iport->device_name, iport->device_id);
+  }
+}
+
+
+//
+// device_listener
+//
+
+dl_status iwdp_listen(iwdp_t self, const char *device_id) {
+  iwdp_private_t my = self->private_state;
+
+  // see if this device was previously attached
+  ht_t iport_ht = my->device_id_to_iport;
+  iwdp_iport_t iport = (iwdp_iport_t)ht_get_value(iport_ht, device_id);
+  if (iport && iport->s_fd > 0) {
+    return self->on_error(self, "%s already on :%d", device_id,
+        iport->port);
+  }
+  int port = (iport ? iport->port : -1);
+
+  // select new port
+  int min_port = -1;
+  int max_port = -1;
+  if (self->select_port && self->select_port(self, device_id,
+        &port, &min_port, &max_port)) {
+    return (device_id ? DL_ERROR : DL_SUCCESS);
+  }
+  if (port < 0 && (min_port < 0 || max_port < min_port)) {
+    return (device_id ? DL_ERROR : DL_SUCCESS); // ignore this device
+  }
+  if (!iport) {
+    iport = iwdp_iport_new();
+    iport->device_id = (device_id ? strdup(device_id) : NULL);
