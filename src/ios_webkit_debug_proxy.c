@@ -121,3 +121,92 @@ struct iwdp_iwi_struct {
   wi_t wi;
   int wi_fd;
   char *connection_id;
+
+  rpc_t rpc;  // plist parser
+  rpc_app_t app;
+
+  bool connected;
+  uint32_t max_page_num; // > 0
+  ht_t app_id_to_true;   // set of app_ids
+  ht_t page_num_to_ipage;
+};
+
+iwdp_iwi_t iwdp_iwi_new(bool partials_supported, bool *is_debug);
+void iwdp_iwi_free(iwdp_iwi_t iwi);
+
+struct iwdp_ifs_struct;
+typedef struct iwdp_ifs_struct *iwdp_ifs_t;
+
+struct iwdp_ipage_struct;
+typedef struct iwdp_ipage_struct *iwdp_ipage_t;
+
+/*!
+ * WebSocket connection.
+ */
+struct iwdp_iws_struct {
+  iwdp_type_struct type;
+  iwdp_iport_t iport; // owner
+
+  // browser client
+  int ws_fd;
+  ws_t ws;
+  char *ws_id; // devtools sender_id
+
+  // set if the resource is /devtools/page/<page_num>
+  uint32_t page_num;
+
+  // assert (!page_num ||
+  //     (ipage && ipage->page_num == page_num && ipage->iws == this))
+  //
+  // shortcut pointer to the page with our page_num, but only if
+  // we own that page (i.e. ipage->iws == this).  Another iws can "steal" our
+  // page away and set ipage == NULL, but we keep our page_num so we can report
+  // a useful error.
+  iwdp_ipage_t ipage; // owner is iwi->page_num_to_ipage
+
+  // set if the resource is /devtools/<non-page>
+  iwdp_ifs_t ifs;
+};
+typedef struct iwdp_iws_struct *iwdp_iws_t;
+iwdp_iws_t iwdp_iws_new(bool *is_debug);
+void iwdp_iws_free(iwdp_iws_t iws);
+
+/*!
+ * Static file-system page request.
+ */
+struct iwdp_ifs_struct {
+  iwdp_type_struct type;
+  iwdp_iws_t iws; // owner
+
+  // static server
+  int fs_fd;
+};
+
+iwdp_ifs_t iwdp_ifs_new();
+void iwdp_ifs_free(iwdp_ifs_t ifs);
+
+
+// page info
+struct iwdp_ipage_struct {
+  // browser
+  uint32_t page_num;
+
+  // webinspector, which can lag re: on_applicationSentListing
+  char *app_id;
+  uint32_t page_id;
+  char *connection_id;
+  char *title;
+  char *url;
+  char *sender_id;
+
+  // set if being inspected, limit one client per page
+  // owner is iport->ws_id_to_iws
+  iwdp_iws_t iws;
+};
+
+iwdp_ipage_t iwdp_ipage_new();
+void iwdp_ipage_free(iwdp_ipage_t ipage);
+int iwdp_ipage_cmp(const void *a, const void *b);
+char *iwdp_ipages_to_text(iwdp_ipage_t *ipages, bool want_json,
+    const char *device_id, const char *device_name,
+    const char *frontend_url, const char *host, int port);
