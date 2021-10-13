@@ -293,3 +293,100 @@ dl_status iwdp_listen(iwdp_t self, const char *device_id) {
   if (!iport) {
     iport = iwdp_iport_new();
     iport->device_id = (device_id ? strdup(device_id) : NULL);
+    ht_put(iport_ht, iport->device_id, iport);
+  }
+  iport->self = self;
+
+  // listen for browser clients
+  int s_fd = -1;
+  if (port > 0) {
+    s_fd = self->listen(self, port);
+  }
+  if (s_fd < 0 && (min_port > 0 && max_port >= min_port)) {
+    iwdp_iport_t *iports = (iwdp_iport_t *)ht_values(iport_ht);
+    int p;
+    for (p = min_port; p <= max_port; p++) {
+      bool is_taken = false;
+      iwdp_iport_t *ipp;
+      for (ipp = iports; *ipp; ipp++) {
+        if ((*ipp)->port == p) {
+          is_taken = true;
+          break;
+        }
+      }
+      if (!is_taken && p != port) {
+        s_fd = self->listen(self, p);
+        if (s_fd > 0) {
+          port = p;
+          break;
+        }
+      }
+    }
+    free(iports);
+  }
+  if (s_fd < 0) {
+    return self->on_error(self, "Unable to bind %s on port %d-%d",
+        (device_id ? device_id : "\"devices list\""),
+        min_port, max_port);
+  }
+  if (self->add_fd(self, s_fd, NULL, iport, true)) {
+    return self->on_error(self, "add_fd s_fd=%d failed", s_fd);
+  }
+  iport->s_fd = s_fd;
+  iport->port = port;
+  if (!device_id) {
+    iwdp_log_connect(iport);
+  }
+  return DL_SUCCESS;
+}
+
+iwdp_status iwdp_start(iwdp_t self) {
+  iwdp_private_t my = self->private_state;
+  if (my->idl) {
+    return self->on_error(self, "Already started?");
+  }
+
+  if (iwdp_listen(self, NULL)) {
+    // Okay, keep going
+  }
+
+  iwdp_idl_t idl = iwdp_idl_new();
+  idl->self = self;
+
+  int dl_fd = self->subscribe(self);
+  if (dl_fd < 0) {  // usbmuxd isn't running
+    return self->on_error(self, "No device found, is it plugged in?");
+  }
+  idl->dl_fd = dl_fd;
+
+  if (self->add_fd(self, dl_fd, NULL, idl, false)) {
+    return self->on_error(self, "add_fd failed");
+  }
+
+  dl_t dl = idl->dl;
+  if (dl->start(dl)) {
+    return self->on_error(self, "Unable to start device_listener");
+  }
+
+  // TODO add iOS simulator listener
+  // for now we'll fake a callback
+  dl->on_attach(dl, "SIMULATOR", -1);
+
+  return IWDP_SUCCESS;
+}
+
+dl_status iwdp_send_to_dl(dl_t dl, const char *buf, size_t length) {
+  iwdp_idl_t idl = (iwdp_idl_t)dl->state;
+  iwdp_t self = idl->self;
+  int dl_fd = idl->dl_fd;
+  return self->send(self, dl_fd, buf, length);
+}
+
+dl_status iwdp_on_attach(dl_t dl, const char *device_id, int device_num) {
+  iwdp_t self = ((iwdp_idl_t)dl->state)->self;
+  if (!device_id) {
+    return self->on_error(self, "Null device_id");
+  }
+
+  if (iwdp_listen(self, device_id)) {
+    // Couldn't bind browser port, or we're simply ignoring this device
