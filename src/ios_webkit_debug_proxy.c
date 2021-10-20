@@ -390,3 +390,90 @@ dl_status iwdp_on_attach(dl_t dl, const char *device_id, int device_num) {
 
   if (iwdp_listen(self, device_id)) {
     // Couldn't bind browser port, or we're simply ignoring this device
+    return DL_SUCCESS;
+  }
+  iwdp_private_t my = self->private_state;
+
+  // Return "success" on most errors, otherwise we'll kill our
+  // device_listener and, via iwdp_idl_close, all our iports!
+
+  ht_t iport_ht = my->device_id_to_iport;
+  iwdp_iport_t iport = (iwdp_iport_t)ht_get_value(iport_ht, device_id);
+  if (!iport) {
+    return self->on_error(self, "Internal error: !iport %s", device_id);
+  }
+  if (iport->iwi) {
+    self->on_error(self, "%s already on :%d", device_id, iport->port);
+    return DL_SUCCESS;
+  }
+  char *device_name = iport->device_name;
+  int device_os_version = 0;
+
+  // connect to inspector
+  int wi_fd;
+  void *ssl_session = NULL;
+  bool is_sim = !strcmp(device_id, "SIMULATOR");
+  if (is_sim) {
+    // TODO launch webinspectord
+    // For now we'll assume Safari starts it for us.
+    //
+    // `launchctl list` shows:
+    //   com.apple.iPhoneSimulator:com.apple.webinspectord
+    // so the launch is probably something like:
+    //   xpc_connection_create[_mach_service](...webinspectord, ...)?
+    wi_fd = self->connect(self, my->sim_wi_socket_addr);
+  } else {
+    wi_fd = self->attach(self, device_id, NULL,
+      (device_name ? NULL : &device_name), &device_os_version, &ssl_session);
+  }
+  if (wi_fd < 0) {
+    self->remove_fd(self, iport->s_fd);
+    if (!is_sim) {
+      self->on_error(self, "Unable to attach %s inspector", device_id);
+    }
+    return DL_SUCCESS;
+  }
+  iport->device_name = (device_name ? device_name : strdup(device_id));
+  iport->device_os_version = device_os_version;
+  iwdp_iwi_t iwi = iwdp_iwi_new(!is_sim && device_os_version < 0xb0000,
+      self->is_debug);
+  iwi->iport = iport;
+  iport->iwi = iwi;
+  if (self->add_fd(self, wi_fd, ssl_session, iwi, false)) {
+    self->remove_fd(self, iport->s_fd);
+    return self->on_error(self, "add_fd wi_fd=%d failed", wi_fd);
+  }
+  iwi->wi_fd = wi_fd;
+
+  // start inspector
+  rpc_new_uuid(&iwi->connection_id);
+  rpc_t rpc = iwi->rpc;
+  if (rpc->send_reportIdentifier(rpc, iwi->connection_id)) {
+    self->remove_fd(self, iport->s_fd);
+    self->on_error(self, "Unable to report to inspector %s",
+        device_id);
+    return DL_SUCCESS;
+  }
+
+  iport->is_sticky = true;
+  return DL_SUCCESS;
+}
+
+dl_status iwdp_on_detach(dl_t dl, const char *device_id, int device_num) {
+  iwdp_idl_t idl = (iwdp_idl_t)dl->state;
+  iwdp_t self = idl->self;
+  iwdp_private_t my = self->private_state;
+  iwdp_iport_t iport = (iwdp_iport_t)ht_get_value(my->device_id_to_iport,
+      device_id);
+  if (iport && iport->s_fd > 0) {
+    self->remove_fd(self, iport->s_fd);
+  }
+  return IWDP_SUCCESS;
+}
+
+//
+// socket I/O
+//
+
+iwdp_status iwdp_iport_accept(iwdp_t self, iwdp_iport_t iport, int ws_fd,
+    iwdp_iws_t *to_iws) {
