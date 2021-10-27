@@ -650,3 +650,90 @@ iwdp_status iwdp_on_close(iwdp_t self, int fd, void *value, bool is_server) {
     case TYPE_IPORT:
       return iwdp_iport_close(self, (iwdp_iport_t)value);
     case TYPE_IWI:
+      return iwdp_iwi_close(self, (iwdp_iwi_t)value);
+    case TYPE_IWS:
+      return iwdp_iws_close(self, (iwdp_iws_t)value);
+    case TYPE_IFS:
+      return iwdp_ifs_close(self, (iwdp_ifs_t)value);
+    default:
+      return self->on_error(self, "Unknown close type %d", type);
+  }
+}
+
+//
+// websocket
+//
+
+ws_status iwdp_send_data(ws_t ws, const char *data, size_t length) {
+  iwdp_iws_t iws = (iwdp_iws_t)ws->state;
+  iwdp_t self = iws->iport->self;
+  return (self->send(self, iws->ws_fd, data, length) ?
+      ws->on_error(ws, "Unable to send %zd bytes of data", length) :
+      WS_SUCCESS);
+}
+
+ws_status iwdp_send_http(ws_t ws, bool is_head, const char *status,
+    const char *resource, const char *content) {
+  char *ctype;
+  iwdp_get_content_type(resource, false, &ctype);
+  char *data;
+  if (asprintf(&data,
+      "HTTP/1.1 %s\r\n"
+      "Content-length: %zd\r\n"
+      "Connection: close"
+      "%s%s\r\n\r\n%s",
+      status, (content ? strlen(content) : 0),
+      (ctype ? "\r\nContent-Type: " : ""), (ctype ? ctype : ""),
+      (content && !is_head ? content : "")) < 0) {
+    return ws->on_error(ws, "asprintf failed");
+  }
+  free(ctype);
+  ws_status ret = ws->send_data(ws, data, strlen(data));
+  free(data);
+  return ret;
+}
+
+ws_status iwdp_on_list_request(ws_t ws, bool is_head, bool want_json,
+    const char *host) {
+  iwdp_iws_t iws = (iwdp_iws_t)ws->state;
+  iwdp_iport_t iport = iws->iport;
+  iwdp_t self = iport->self;
+  iwdp_private_t my = self->private_state;
+  char *content;
+  if (iport->device_id) {
+    const char *fe_url = my->frontend;
+    char *frontend_url = NULL;
+    if (fe_url && !strncasecmp(fe_url, "chrome-devtools://", 18)) {
+      // allow chrome-devtools links, even though Chrome's sandbox blocks them:
+      //   Not allowed to load local resource: chrome-devtools://...
+      // Maybe a future Chrome flag (TBD?) will permit this.
+      frontend_url = strdup(fe_url);
+    } else if (fe_url) {
+      const char *fe_proto = strstr(fe_url, "://");
+      const char *fe_path = (fe_proto ? fe_proto + 3 : fe_url);
+      const char *fe_sep = strrchr(fe_path, '/');
+      const char *fe_file = (fe_sep ? (strlen(fe_sep) > 1 ? fe_sep + 1 : NULL) :
+          fe_path);
+      if (!fe_file) {
+        self->on_error(self, "Ignoring invalid frontend: %s\n", fe_url);
+      }
+      if (asprintf(&frontend_url, "/devtools/%s", fe_file) < 0) {
+        return self->on_error(self, "asprintf failed");
+      }
+    }
+    ht_t ipage_ht = (iport->iwi ? iport->iwi->page_num_to_ipage : NULL);
+    iwdp_ipage_t *ipages = (iwdp_ipage_t *)ht_values(ipage_ht);
+
+    content = iwdp_ipages_to_text(ipages, want_json,
+        iport->device_id, iport->device_name, frontend_url, host, iport->port);
+    free(ipages);
+    free(frontend_url);
+  } else {
+    iwdp_iport_t *iports = (iwdp_iport_t *)ht_values(my->device_id_to_iport);
+    content = iwdp_iports_to_text(iports, want_json, host);
+    free(iports);
+  }
+  ws_status ret = iwdp_send_http(ws, is_head, "200 OK",
+      (want_json ? ".json" : ".html"), content);
+  free(content);
+  return ret;
