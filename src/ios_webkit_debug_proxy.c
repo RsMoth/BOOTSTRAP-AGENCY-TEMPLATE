@@ -572,3 +572,81 @@ iwdp_status iwdp_iport_close(iwdp_t self, iwdp_iport_t iport) {
 iwdp_status iwdp_iws_close(iwdp_t self, iwdp_iws_t iws) {
   // clear pointer to this iws
   iwdp_ipage_t ipage = iws->ipage;
+  if (ipage) {
+    if (ipage->sender_id && ipage->iws == iws) {
+      iwdp_stop_devtools(ipage);
+    } // else internal error?
+  }
+  iwdp_iport_t iport = iws->iport;
+  if (iport) {
+    ht_t iws_ht = iport->ws_id_to_iws;
+    char *ws_id = iws->ws_id;
+    iwdp_iws_t iws2 = (iwdp_iws_t)ht_get_value(iws_ht, ws_id);
+    if (ws_id && iws2 == iws) {
+      ht_remove(iws_ht, ws_id);
+    } // else internal error?
+  }
+  iwdp_ifs_t ifs = iws->ifs;
+  if (ifs) {
+    ifs->iws = NULL;
+    if (ifs->fs_fd > 0) {
+      self->remove_fd(self, ifs->fs_fd);
+    } // else internal error?
+  }
+  iwdp_iws_free(iws);
+  return IWDP_SUCCESS;
+}
+
+iwdp_status iwdp_iwi_close(iwdp_t self, iwdp_iwi_t iwi) {
+  iwdp_iport_t iport = iwi->iport;
+  if (iport) {
+    iwdp_log_disconnect(iport);
+    // clear pointer to this iwi
+    if (iport->iwi) {
+      iport->iwi = NULL;
+    }
+  }
+  // free pages
+  ht_t ipage_ht = iwi->page_num_to_ipage;
+  iwdp_ipage_t *ipages = (iwdp_ipage_t *)ht_values(ipage_ht);
+  ht_clear(ipage_ht);
+  iwdp_ipage_t *ipp;
+  for (ipp = ipages; *ipp; ipp++) {
+    iwdp_ipage_free((iwdp_ipage_t)*ipp);
+  }
+  free(ipages);
+  iwdp_iwi_free(iwi);
+  // close browser listener, which will close all clients
+  if (iport && iport->s_fd > 0) {
+    self->remove_fd(self, iport->s_fd);
+  }
+  return IWDP_SUCCESS;
+}
+
+iwdp_status iwdp_ifs_close(iwdp_t self, iwdp_ifs_t ifs) {
+  iwdp_iws_t iws = ifs->iws;
+  // clear pointer to this ifs
+  if (iws && iws->ifs == ifs) {
+    iws->ifs = NULL;
+  }
+  iwdp_ifs_free(ifs);
+  // close client
+  if (iws && iws->ws_fd > 0) {
+    self->remove_fd(self, iws->ws_fd);
+  }
+  return IWDP_SUCCESS;
+}
+
+iwdp_status iwdp_idl_close(iwdp_t self, iwdp_idl_t idl) {
+  // TODO rm_fd all device_id_to_iport s_fds?!
+  return IWDP_SUCCESS;
+}
+
+iwdp_status iwdp_on_close(iwdp_t self, int fd, void *value, bool is_server) {
+  int type = ((iwdp_type_t)value)->type;
+  switch (type) {
+    case TYPE_IDL:
+      return iwdp_idl_close(self, (iwdp_idl_t)value);
+    case TYPE_IPORT:
+      return iwdp_iport_close(self, (iwdp_iport_t)value);
+    case TYPE_IWI:
