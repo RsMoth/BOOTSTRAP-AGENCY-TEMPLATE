@@ -477,3 +477,98 @@ dl_status iwdp_on_detach(dl_t dl, const char *device_id, int device_num) {
 
 iwdp_status iwdp_iport_accept(iwdp_t self, iwdp_iport_t iport, int ws_fd,
     iwdp_iws_t *to_iws) {
+  iwdp_iws_t iws = iwdp_iws_new(self->is_debug);
+  iws->iport = iport;
+  iws->ws_fd = ws_fd;
+  rpc_new_uuid(&iws->ws_id);
+  ht_put(iport->ws_id_to_iws, iws->ws_id, iws);
+  *to_iws = iws;
+  return IWDP_SUCCESS;
+}
+
+iwdp_status iwdp_on_accept(iwdp_t self, int s_fd, void *value,
+    int fd, void **to_value) {
+  int type = ((iwdp_type_t)value)->type;
+  if (type == TYPE_IPORT) {
+    return iwdp_iport_accept(self, (iwdp_iport_t)value, fd,
+        (iwdp_iws_t*)to_value);
+  } else {
+    return self->on_error(self, "Unexpected accept type %d", type);
+  }
+}
+
+iwdp_status iwdp_on_recv(iwdp_t self, int fd, void *value,
+    const char *buf, ssize_t length) {
+  int type = ((iwdp_type_t)value)->type;
+  switch (type) {
+    case TYPE_IDL:
+      {
+        dl_t dl = ((iwdp_idl_t)value)->dl;
+        return dl->on_recv(dl, buf, length);
+      }
+    case TYPE_IWI:
+      {
+        wi_t wi = ((iwdp_iwi_t)value)->wi;
+        return wi->on_recv(wi, buf, length);
+      }
+    case TYPE_IWS:
+      {
+        ws_t ws = ((iwdp_iws_t)value)->ws;
+        return ws->on_recv(ws, buf, length);
+      }
+    case TYPE_IFS:
+      {
+        int ws_fd = ((iwdp_ifs_t)value)->iws->ws_fd;
+        iwdp_status ret = self->send(self, ws_fd, buf, length);
+        if (ret) {
+          self->remove_fd(self, ws_fd);
+        }
+        return ret;
+      }
+    default:
+      return self->on_error(self, "Unexpected recv type %d", type);
+  }
+}
+
+iwdp_status iwdp_iport_close(iwdp_t self, iwdp_iport_t iport) {
+  iwdp_private_t my = self->private_state;
+  // check pointer to this iport
+  const char *device_id = iport->device_id;
+  ht_t iport_ht = my->device_id_to_iport;
+  iwdp_iport_t old_iport = (iwdp_iport_t)ht_get_value(iport_ht, device_id);
+  if (old_iport != iport) {
+    return self->on_error(self, "Internal iport mismatch?");
+  }
+  // close clients
+  iwdp_iws_t *iwss = (iwdp_iws_t *)ht_values(iport->ws_id_to_iws);
+  iwdp_iws_t *iws;
+  for (iws = iwss; *iws; iws++) {
+    if ((*iws)->ws_fd > 0) {
+      self->remove_fd(self, (*iws)->ws_fd);
+    }
+  }
+  free(iwss);
+  ht_clear(iport->ws_id_to_iws);
+  // close iwi
+  iwdp_iwi_t iwi = iport->iwi;
+  if (iwi) {
+    iwdp_log_disconnect(iport);
+    iwi->iport = NULL;
+    iport->iwi = NULL;
+    if (iwi->wi_fd > 0) {
+      self->remove_fd(self, iwi->wi_fd);
+    }
+  }
+  if (iport->is_sticky) {
+    // keep iport so we can restore the port if this device is reattached
+    iport->s_fd = -1;
+  } else {
+    ht_remove(iport_ht, device_id);
+    iwdp_iport_free(iport);
+  }
+  return IWDP_SUCCESS;
+}
+
+iwdp_status iwdp_iws_close(iwdp_t self, iwdp_iws_t iws) {
+  // clear pointer to this iws
+  iwdp_ipage_t ipage = iws->ipage;
