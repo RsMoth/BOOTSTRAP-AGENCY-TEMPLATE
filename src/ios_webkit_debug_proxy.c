@@ -737,3 +737,107 @@ ws_status iwdp_on_list_request(ws_t ws, bool is_head, bool want_json,
       (want_json ? ".json" : ".html"), content);
   free(content);
   return ret;
+}
+
+ws_status iwdp_on_not_found(ws_t ws, bool is_head, const char *resource,
+    const char *details) {
+  char *content;
+  if (asprintf(&content,
+      "<html><title>Error 404 (Not Found)</title>\n"
+      "<p><b>404.</b> <ins>That's an error.</ins>\n"
+      "<p>The requested URL <code>%s</code> was not found.\n"
+      "%s</html>", resource, (details ? details : "")) < 0) {
+    return ws->on_error(ws, "asprintf failed");
+  }
+  ws_status ret = iwdp_send_http(ws, is_head, "404 Not Found", ".html",
+      content);
+  free(content);
+  return ret;
+}
+
+ws_status iwdp_on_devtools_request(ws_t ws, const char *resource) {
+  iwdp_iws_t iws = (iwdp_iws_t)ws->state;
+  if (!resource || strncmp(resource, "/devtools/page/", 15)) {
+    return ws->on_error(ws, "Internal error: %s", resource);
+  }
+  // parse page_num
+  const char *s = resource + 15;
+  char *end = NULL;
+  int page_num = strtol(s, &end, 0);
+  if (*end != '\0' || *s == '\0') {
+    page_num = -1;
+  }
+  // find page
+  iwdp_iwi_t iwi = iws->iport->iwi;
+  iwdp_ipage_t p =
+    (iwi && page_num > 0 && page_num <= iwi->max_page_num ?
+     (iwdp_ipage_t)ht_get_value(iwi->page_num_to_ipage,
+       HT_KEY(page_num)) : NULL);
+  if (!p) {
+    return iwdp_on_not_found(ws, false, resource, "Unknown page id");
+  }
+  return iwdp_start_devtools(p, iws);
+}
+
+ws_status iwdp_get_frontend_path(const char *fe_path, const char *resource,
+    char **to_path) {
+  if (!to_path) {
+    return IWDP_ERROR;
+  }
+  *to_path = NULL;
+
+  // trim frontend "/qux/inspector.html" to "/qux/"
+  if (!fe_path) {
+    return IWDP_ERROR;
+  }
+  const char *fe_file = strrchr(fe_path, '/');
+  fe_file = (fe_file ? fe_file + 1 : NULL);
+  size_t fe_path_len = (fe_file ? (fe_file - fe_path) : 0);
+
+  // trim resource "/devtools/foo/bar.html?q" to "foo/bar.html"
+  // this might be too restrictive, but at least it's secure
+  if (!resource || strncmp(resource, "/devtools/", 10)) {
+    return IWDP_ERROR;
+  }
+  const char *res = resource + 10;
+  const char *res_tail = res - 1;
+  while (*++res_tail == '/') { // deny root via !fe_path_len && res[0]=='/'
+  }
+  char ch;
+  for (ch = *res_tail;
+       ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') ||
+        (ch >= '0' && ch <= '9') || (ch && strchr("-./_", ch)));
+       ch = *++res_tail) {
+  }
+  size_t res_len = res_tail - res;
+  if (strnstr(res, "..", res_len)) {
+    return IWDP_ERROR;
+  }
+  if (!res_len && fe_file) {
+    res = fe_file;
+    res_len = strlen(fe_file);
+  }
+
+  // concat them into "/qux/foo/bar.html"
+  if (asprintf(to_path, "%.*s%.*s", (int)fe_path_len, fe_path, (int)res_len, res) < 0) {
+    return IWDP_ERROR;
+  }
+  return IWDP_SUCCESS;
+}
+
+ws_status iwdp_on_static_request_for_file(ws_t ws, bool is_head,
+    const char *resource, const char *fe_path, bool *to_keep_alive) {
+  iwdp_iws_t iws = (iwdp_iws_t)ws->state;
+  iwdp_t self = iws->iport->self;
+
+  // TODO if fe_path is "/blah/resources.pak#devtools.html", do something like:
+  //   if not my->path2pos and exists "/blah/resources.pak":
+  //     read pathToOffset from pak, e.g. [(22000,3500), (22001,5000), ...]
+  //     if exists "/blah/resources.dat":
+  //       read path2id from text file, e.g. "22000 devtools.html\n22001 ..."
+  //     elif exists chrome binary:  // ugly hack :(
+  //       find '\0devtools.html\0' in binary
+  //       read path2id from strings until a non-path, assume ids 22000-and-up
+  //     join into my->path2pos, e.g. {'devtools.html':(3500,1500), ...}
+  //   if my->path2pos:
+  //     offset, length = my->path2pos[resource + 10]
