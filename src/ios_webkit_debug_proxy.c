@@ -841,3 +841,102 @@ ws_status iwdp_on_static_request_for_file(ws_t ws, bool is_head,
   //     join into my->path2pos, e.g. {'devtools.html':(3500,1500), ...}
   //   if my->path2pos:
   //     offset, length = my->path2pos[resource + 10]
+  //     seek to offset in "/blah/resources.pak", read length bytes, ws->send
+
+  char *path;
+  iwdp_get_frontend_path(fe_path, resource, &path);
+  if (!path) {
+    return iwdp_send_http(ws, is_head, "403 Forbidden", ".txt", "Invalid path");
+  }
+
+  int fs_fd = open(path, O_RDONLY);
+  if (fs_fd < 0) {
+    // file doesn't exist.  Provide help if this is a "*.js" with a matching
+    // "*.qrc", e.g. WebKit's qresource-compiled "InspectorBackendCommands.js"
+    bool is_qrc = false;
+    if (strlen(path) > 3 && !strcasecmp(path + strlen(path) - 3, ".js")) {
+      char *qrc_path;
+      if (asprintf(&qrc_path, "%.*sqrc", (int)(strlen(path) - 2), path) < 0) {
+        return self->on_error(self, "asprintf failed");
+      }
+      int qrc_fd = open(qrc_path, O_RDONLY);
+      free(qrc_path);
+      if (qrc_fd >= 0) {
+        is_qrc = true;
+        close(qrc_fd);
+      }
+    }
+    if (is_qrc) {
+      const char *fe_sep = strrchr(fe_path, '/');
+      size_t fe_path_len = (fe_sep ? (fe_sep - fe_path) : strlen(fe_path));
+      self->on_error(self, "Missing code-generated WebKit file:\n"
+          "  %s\n"
+          "A matching \".qrc\" exists, so try generating the \".js\":\n"
+          "  cd %.*s/..\n"
+          "  mkdir -p tmp\n"
+          "  ./CodeGeneratorInspector.py Inspector.json "
+          "--output_h_dir tmp --output_cpp_dir tmp\n"
+          "  mv tmp/*.js %.*s\n", path, fe_path_len, fe_path,
+          fe_path_len, fe_path);
+    }
+    free(path);
+    return iwdp_on_not_found(ws, is_head, resource,
+        (is_qrc ? "Missing code-generated WebKit file" : NULL));
+  }
+  char *ctype = NULL;
+  iwdp_get_content_type(path, true, &ctype);
+  free(path);
+  struct stat fs_stat;
+  if (fstat(fs_fd, &fs_stat) || !(fs_stat.st_mode & S_IFREG)) {
+    free(ctype);
+    close(fs_fd);
+    return iwdp_send_http(ws, is_head, "403 Forbidden", ".txt", "Not a file");
+  }
+  size_t length = fs_stat.st_size;
+  char *data = NULL;
+  if (asprintf(&data,
+      "HTTP/1.1 200 OK\r\n"
+      "Content-length: %zd\r\n"
+      "Connection: close"
+      "%s%s\r\n\r\n",
+      length, (ctype ? "\r\nContent-Type: " : ""), (ctype ? ctype : "")) < 0) {
+    return self->on_error(self, "asprintf failed");
+  }
+  free(ctype);
+  ws_status ret = ws->send_data(ws, data, strlen(data));
+  free(data);
+  if (ret || is_head || !length) {
+    close(fs_fd);
+    return ret;
+  }
+  // bummer, can't self->add_fd this non-socket fd to selectable :(
+  size_t max_len = 4096;
+  size_t buf_len = (length > max_len ? max_len : length);
+  char *buf = (char *)calloc(buf_len, sizeof(char));
+  ssize_t sent_bytes = 0;
+  while (true) {
+    ssize_t read_bytes = read(fs_fd, buf, buf_len);
+    if (read_bytes <= 0) {
+      break;
+    }
+    if (ws->send_data(ws, buf, read_bytes)) {
+      break;
+    }
+    sent_bytes += read_bytes;
+  }
+  close(fs_fd);
+  return (sent_bytes == length ? WS_SUCCESS : WS_ERROR);
+}
+
+ws_status iwdp_on_static_request_for_http(ws_t ws, bool is_head,
+    const char *resource, bool *to_keep_alive) {
+  iwdp_iws_t iws = (iwdp_iws_t)ws->state;
+  iwdp_t self = iws->iport->self;
+  const char *fe_url = self->private_state->frontend;
+
+  if (!resource || !fe_url || strncasecmp(fe_url, "http://", 7)) {
+    return IWDP_ERROR; // internal error
+  }
+
+  const char *fe_host = fe_url + 7;
+  const char *fe_path = strchr(fe_host, '/');
