@@ -1124,3 +1124,93 @@ ws_status iwdp_on_frame(ws_t ws,
         return ret;
       }
       rpc_t rpc = iwi->rpc;
+      return rpc->send_forwardSocketData(rpc,
+          iwi->connection_id,
+          ipage->app_id, ipage->page_id, ipage->sender_id,
+          payload_data, payload_length);
+
+    case OPCODE_CLOSE:
+      // ack close
+      return ws->send_close(ws, CLOSE_NORMAL, NULL);
+
+    case OPCODE_PING:
+      // ack ping
+      return ws->send_frame(ws,
+          true, OPCODE_PONG, false,
+          payload_data, payload_length);
+
+    case OPCODE_PONG:
+      return WS_SUCCESS;
+
+    default:
+      return WS_ERROR;
+  }
+}
+
+//
+// webinspector
+//
+
+wi_status iwdp_send_packet(wi_t wi, const char *packet, size_t length) {
+  iwdp_iwi_t iwi = (iwdp_iwi_t)wi->state;
+  iwdp_t self = iwi->iport->self;
+  return (self->send(self, iwi->wi_fd, packet, length) ?
+      self->on_error(self, "Unable to send %zd bytes to inspector", length) :
+      WI_SUCCESS);
+}
+
+wi_status iwdp_recv_plist(wi_t wi, const plist_t rpc_dict) {
+  rpc_t rpc = ((iwdp_iwi_t)wi->state)->rpc;
+  return rpc->recv_plist(rpc, rpc_dict);
+}
+
+rpc_status iwdp_send_plist(rpc_t rpc, const plist_t rpc_dict) {
+  wi_t wi = ((iwdp_iwi_t)rpc->state)->wi;
+  return wi->send_plist(wi, rpc_dict);
+}
+
+rpc_status iwdp_on_reportSetup(rpc_t rpc) {
+  iwdp_iwi_t iwi = (iwdp_iwi_t)rpc->state;
+  iwi->connected = true;
+  iwdp_log_connect(iwi->iport);
+  return RPC_SUCCESS;
+}
+
+rpc_status iwdp_add_app_id(rpc_t rpc, const char *app_id) {
+  iwdp_iwi_t iwi = (iwdp_iwi_t)rpc->state;
+  ht_t app_id_ht = iwi->app_id_to_true;
+  if (ht_get_value(app_id_ht, app_id)) {
+    return RPC_SUCCESS;
+  }
+  ht_put(app_id_ht, strdup(app_id), HT_VALUE(1));
+  return rpc->send_forwardGetListing(rpc, iwi->connection_id, app_id);
+}
+
+void rpc_set_app(rpc_t rpc, const rpc_app_t app) {
+    iwdp_iwi_t iwi = (iwdp_iwi_t)rpc->state;
+    rpc_app_t to_app = NULL;
+    rpc_copy_app(app, &to_app);
+    iwi->app = to_app;
+}
+
+rpc_status iwdp_on_applicationConnected(rpc_t rpc, const rpc_app_t app) {
+  rpc_set_app(rpc, app);
+  return iwdp_add_app_id(rpc, app->app_id);
+}
+
+ws_status iwdp_start_devtools(iwdp_ipage_t ipage, iwdp_iws_t iws) {
+  if (!ipage || !iws) {
+    return WS_ERROR;
+  }
+  iwdp_iwi_t iwi = iws->iport->iwi;
+  if (!iwi) {
+    return WS_ERROR; // internal error?
+  }
+  iwdp_iport_t iport = iwi->iport;
+  iwdp_t self = (iport ? iport->self : NULL);
+  iwdp_iws_t iws2 = ipage->iws;
+  if (iws2) {
+    // steal this page from our other client, as if the page went away
+    self->on_error(self, "Taking page %d/%d from local %s to %s",
+        iport->port, ipage->page_num, iws2->ws_id, iws->ws_id);
+    iwdp_stop_devtools(ipage);
