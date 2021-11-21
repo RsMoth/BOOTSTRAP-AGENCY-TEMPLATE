@@ -1033,3 +1033,94 @@ ws_status iwdp_on_static_request(ws_t ws, bool is_head, const char *resource,
 
   iwdp_private_t my = self->private_state;
   const char *fe_url = my->frontend;
+  if (!fe_url) {
+    return iwdp_on_not_found(ws, is_head, resource, "Frontend is disabled.");
+  }
+  bool is_file = !strstr(fe_url, "://");
+  if (is_file || !strncasecmp(fe_url, "file://", 7)) {
+    return iwdp_on_static_request_for_file(ws, is_head, resource,
+        fe_url + (is_file ? 0 : 7), to_keep_alive);
+  } else if (!strncasecmp(fe_url, "http://", 7)) {
+    return iwdp_on_static_request_for_http(ws, is_head, resource,
+        to_keep_alive);
+  }
+  return iwdp_on_not_found(ws, is_head, resource, "Invalid frontend URL?");
+}
+
+ws_status iwdp_on_http_request(ws_t ws,
+    const char *method, const char *resource, const char *version,
+    const char *host, const char *headers, size_t headers_length,
+    bool is_websocket, bool *to_keep_alive) {
+  bool is_get = !strcmp(method, "GET");
+  bool is_head = !is_get && !strcmp(method, "HEAD");
+  if (is_websocket) {
+    if (is_get && !strncmp(resource, "/devtools/page/", 15)) {
+      return iwdp_on_devtools_request(ws, resource);
+    }
+  } else {
+    if (!is_get && !is_head) {
+      return iwdp_on_not_found(ws, is_head, resource, "Method Not Allowed");
+    }
+
+    if (!strlen(resource) || !strcmp(resource, "/")) {
+      return iwdp_on_list_request(ws, is_head, false, host);
+    } else if (!strcmp(resource, "/json") || !strcmp(resource, "/json/list")) {
+      return iwdp_on_list_request(ws, is_head, true, host);
+    } else if (!strncmp(resource, "/devtools/", 10)) {
+      return iwdp_on_static_request(ws, is_head, resource,
+          to_keep_alive);
+    }
+    // Chrome's devtools_http_handler_impl.cc also supports:
+    //   /json/version*  -- version info
+    //   /json/new*      -- open page
+    //   /json/close/*   -- close page
+    //   /thumb/*        -- get page thumbnail png
+  }
+  return iwdp_on_not_found(ws, is_head, resource, NULL);
+}
+
+ws_status iwdp_on_upgrade(ws_t ws,
+    const char *resource, const char *protocol,
+    int version, const char *sec_key) {
+  return ws->send_upgrade(ws);
+}
+
+ws_status iwdp_on_frame(ws_t ws,
+    bool is_fin, uint8_t opcode, bool is_masking,
+    const char *payload_data, size_t payload_length,
+    bool *to_keep) {
+  iwdp_iws_t iws = (iwdp_iws_t)ws->state;
+  switch (opcode) {
+    case OPCODE_TEXT:
+    case OPCODE_BINARY:
+      if (!is_fin) {
+        // wait for full data
+        *to_keep = true;
+        return WS_SUCCESS;
+      }
+      if (!is_masking) {
+        return ws->send_close(ws, CLOSE_PROTOCOL_ERROR,
+            "Clients must mask");
+      }
+      iwdp_iport_t iport = iws->iport;
+      iwdp_iwi_t iwi = iport->iwi;
+      if (!iwi) {
+        return ws->send_close(ws, CLOSE_GOING_AWAY, "inspector closed?");
+      }
+      iwdp_ipage_t ipage = iws->ipage;
+      if (!ipage) {
+        // someone stole our page?
+        iwdp_ipage_t p = (iws->page_num ? (iwdp_ipage_t)ht_get_value(
+            iwi->page_num_to_ipage, HT_KEY(iws->page_num)) : NULL);
+        char *s;
+        if (asprintf(&s, "Page %d/%d %s%s", iport->port, iws->page_num,
+            (p ? "claimed by " : "not found"),
+            (p ? (p->iws ? "local" : "remote") : "" )) < 0) {
+          return ws->on_error(ws, "asprintf failed");
+        }
+        ws->on_error(ws, "%s", s);
+        ws_status ret = ws->send_close(ws, CLOSE_GOING_AWAY, s);
+        free(s);
+        return ret;
+      }
+      rpc_t rpc = iwi->rpc;
