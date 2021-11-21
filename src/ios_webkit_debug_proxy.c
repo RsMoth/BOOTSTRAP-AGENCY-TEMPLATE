@@ -940,3 +940,96 @@ ws_status iwdp_on_static_request_for_http(ws_t ws, bool is_head,
 
   const char *fe_host = fe_url + 7;
   const char *fe_path = strchr(fe_host, '/');
+  if (!fe_path) {
+    return iwdp_send_http(ws, is_head, "500 Server Error", ".txt",
+        "Invalid frontend URL?");
+  }
+  char *path;
+  iwdp_get_frontend_path(fe_path, resource, &path);
+  if (!path) {
+    return iwdp_send_http(ws, is_head, "403 Forbidden", ".txt", "Invalid path");
+  }
+  const char *fe_port = strchr(fe_host, ':');
+  fe_port = (fe_port && fe_port <= fe_path ? fe_port :
+      NULL); // e.g. "http://foo.com/bar:x"
+  size_t fe_host_len = ((fe_port ? fe_port : fe_path) - fe_host);
+  char *host = strndup(fe_host, fe_host_len);
+
+  char *host_with_port;
+  char *port = NULL;
+  if (fe_port) {
+    port = strndup(fe_port, fe_path - fe_port);
+  }
+  if (asprintf(&host_with_port, "%s%s", host, port ? port : ":80") < 0) {
+    return self->on_error(self, "asprintf failed");
+  };
+  free(port);
+
+  int fs_fd = self->connect(self, host_with_port);
+  if (fs_fd < 0) {
+    char *error;
+    if (asprintf(&error, "Unable to connect to %s", host_with_port) < 0) {
+      return self->on_error(self, "asprintf failed");
+    }
+    free(host_with_port);
+    free(host);
+    free(path);
+    ws_status ret = iwdp_send_http(ws, is_head, "500 Server Error", ".txt",
+        error);
+    free(error);
+    return ret;
+  }
+  iwdp_ifs_t ifs = iwdp_ifs_new();
+  ifs->iws = iws;
+  ifs->fs_fd = fs_fd;
+  iws->ifs = ifs;
+  if (self->add_fd(self, fs_fd, NULL, ifs, false)) {
+    free(host_with_port);
+    free(host);
+    free(path);
+    return self->on_error(self, "Unable to add fd %d", fs_fd);
+  }
+  char *data;
+  if (asprintf(&data,
+      "%s %s HTTP/1.1\r\n"
+      "Host: %s\r\n"
+      "Connection: close\r\n" // keep-alive?
+      "Accept: */*\r\n"
+      "\r\n",
+      (is_head ? "HEAD" : "GET"), path, host) < 0) {
+    return self->on_error(self, "asprintf failed");
+  }
+  free(host_with_port);
+  free(host);
+  free(path);
+  size_t length = strlen(data);
+  iwdp_status ret = self->send(self, fs_fd, data, length);
+  free(data);
+  *to_keep_alive = true;
+  return ret;
+
+  /*
+  // redirect
+  char *data;
+  asprintf(&data,
+  "HTTP/1.1 302 Found\r\n"
+  "Connection: close\r\n"
+  "Location: %s%s\r\n"
+  "\r\n",
+  frontend, resource + 10);
+  ws_status ret = ws->send_data(ws, data, strlen(data));
+  free(data);
+  return ret;
+   */
+}
+
+ws_status iwdp_on_static_request(ws_t ws, bool is_head, const char *resource,
+    bool *to_keep_alive) {
+  iwdp_iws_t iws = (iwdp_iws_t)ws->state;
+  iwdp_t self = iws->iport->self;
+  if (!resource || strncmp(resource, "/devtools/", 10)) {
+    return self->on_error(self, "Internal error: %s", resource);
+  }
+
+  iwdp_private_t my = self->private_state;
+  const char *fe_url = my->frontend;
