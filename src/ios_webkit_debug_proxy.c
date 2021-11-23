@@ -1214,3 +1214,76 @@ ws_status iwdp_start_devtools(iwdp_ipage_t ipage, iwdp_iws_t iws) {
     self->on_error(self, "Taking page %d/%d from local %s to %s",
         iport->port, ipage->page_num, iws2->ws_id, iws->ws_id);
     iwdp_stop_devtools(ipage);
+    iws2->page_num = ipage->page_num;
+  }
+  iws->ipage = ipage;
+  iws->page_num = ipage->page_num;
+  ipage->iws = iws;
+  ipage->sender_id = strdup(iws->ws_id);
+  if (ipage->connection_id && iwi->connection_id &&
+       strcmp(ipage->connection_id, iwi->connection_id)) {
+    // steal this page from the other (not-us, maybe dead?) inspector.
+    // We also might need to send_forwardDidClose on their behalf...
+    self->on_error(self, "Taking page %d/%d from remote %s",
+        iport->port, ipage->page_num, ipage->connection_id);
+  }
+  rpc_t rpc = iwi->rpc;
+  return rpc->send_forwardSocketSetup(rpc,
+      iwi->connection_id,
+      ipage->app_id, ipage->page_id, ipage->sender_id);
+}
+
+ws_status iwdp_stop_devtools(iwdp_ipage_t ipage) {
+  iwdp_iws_t iws = ipage->iws;
+  if (!iws) {
+    return WS_SUCCESS;
+  }
+  if (iws->ipage != ipage) {
+    return WS_ERROR; // internal error?
+  }
+  char *sender_id = ipage->sender_id;
+  if (!sender_id) {
+    return WS_ERROR; // internal error?
+  }
+  iwdp_iport_t iport = iws->iport;
+  iwdp_iws_t iws2 = ht_get_value(iport->ws_id_to_iws, sender_id);
+  if (iws != iws2) {
+    return WS_ERROR; // internal error?
+  }
+  iwdp_iwi_t iwi = iport->iwi;
+  if (iwi && iwi->connection_id && (!ipage->connection_id ||
+        !strcmp(ipage->connection_id, iwi->connection_id))) {
+    // if ipage->connection_id is NULL, it's likely a normal lag between our
+    // send_forwardSocketSetup and the on_applicationSentListing ack.
+    rpc_t rpc = iwi->rpc;
+    rpc->send_forwardDidClose(rpc,
+        iwi->connection_id, ipage->app_id,
+        ipage->page_id, ipage->sender_id);
+  }
+  // close the ws_fd?
+  iws->ipage = NULL;
+  iws->page_num = 0;
+  ipage->iws = NULL;
+  ipage->sender_id = NULL;
+  free(sender_id);
+  return WS_SUCCESS;
+}
+
+rpc_status iwdp_remove_app_id(rpc_t rpc, const char *app_id) {
+  iwdp_iwi_t iwi = (iwdp_iwi_t)rpc->state;
+  ht_t app_id_ht = iwi->app_id_to_true;
+  char *old_app_id = ht_get_key(app_id_ht, app_id);
+  if (!old_app_id) {
+    return RPC_SUCCESS;
+  }
+  ht_remove(app_id_ht, app_id);
+  // remove pages with this app_id
+  ht_t ipage_ht = iwi->page_num_to_ipage;
+  iwdp_ipage_t *ipages = (iwdp_ipage_t *)ht_values(ipage_ht);
+  iwdp_ipage_t *ipp;
+  for (ipp = ipages; *ipp; ipp++) {
+    iwdp_ipage_t ipage = *ipp;
+    if (!strcmp(app_id, ipage->app_id)) {
+      iwdp_stop_devtools(ipage);
+      ht_remove(ipage_ht, HT_KEY(ipage->page_num));
+      iwdp_ipage_free(ipage);
