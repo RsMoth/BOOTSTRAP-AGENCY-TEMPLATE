@@ -1287,3 +1287,94 @@ rpc_status iwdp_remove_app_id(rpc_t rpc, const char *app_id) {
       iwdp_stop_devtools(ipage);
       ht_remove(ipage_ht, HT_KEY(ipage->page_num));
       iwdp_ipage_free(ipage);
+    }
+  }
+  free(ipages);
+  // free this last, in case old_app_id == app_id
+  free(old_app_id);
+  return RPC_SUCCESS;
+}
+
+rpc_status iwdp_on_applicationDisconnected(rpc_t rpc, const rpc_app_t app) {
+  return iwdp_remove_app_id(rpc, app->app_id);
+}
+
+rpc_status iwdp_on_reportConnectedApplicationList(rpc_t rpc, const rpc_app_t *apps) {
+  iwdp_iwi_t iwi = (iwdp_iwi_t)rpc->state;
+  ht_t app_id_ht = iwi->app_id_to_true;
+
+  // rpc_reportSetup never comes from iOS >= 11.3
+  if (!iwi->connected) {
+    iwi->connected = true;
+    iwdp_log_connect(iwi->iport);
+  }
+
+  if (*apps == NULL) {
+    return RPC_SUCCESS;
+  }
+
+  // remove old apps
+  char **old_app_ids = (char **)ht_keys(app_id_ht);
+  char **oa;
+  for (oa = old_app_ids; *oa; oa++) {
+    const rpc_app_t *a;
+    for (a = apps; *a && strcmp((*a)->app_id, *oa); a++) {
+    }
+    if (!*a) {
+      iwdp_remove_app_id(rpc, *oa);
+    }
+  }
+  free(old_app_ids);
+
+  // add new apps
+  const rpc_app_t *a;
+  for (a = apps; *a; a++) {
+    rpc_set_app(rpc, *a);
+    iwdp_add_app_id(rpc, (*a)->app_id);
+  }
+  return RPC_SUCCESS;
+}
+
+rpc_status iwdp_on_applicationSentListing(rpc_t rpc,
+    const char *app_id, const rpc_page_t *pages) {
+  iwdp_iwi_t iwi = (iwdp_iwi_t)rpc->state;
+  iwdp_iport_t iport = (iwi ? iwi->iport : NULL);
+  iwdp_t self = (iport ? iport->self : NULL);
+  if (!self) {
+    return RPC_ERROR;  // Inspector closed?
+  }
+  if (!ht_get_value(iwi->app_id_to_true, app_id)) {
+    iwdp_iwi_t iwi = (iwdp_iwi_t)rpc->state;
+    rpc_app_t app = iwi->app;
+    if (app) {
+      return rpc->send_forwardGetListing(rpc, iwi->connection_id, app->app_id);
+    }
+    return self->on_error(self, "Unknown app_id %s", app_id);
+  }
+  ht_t ipage_ht = iwi->page_num_to_ipage;
+  iwdp_ipage_t *ipages = (iwdp_ipage_t *)ht_values(ipage_ht);
+
+  // add new pages
+  const rpc_page_t *pp;
+  for (pp = pages; *pp; pp++) {
+    const rpc_page_t page = *pp;
+    // find page with this app_id & page_id
+    iwdp_ipage_t ipage = NULL;
+    iwdp_ipage_t *ipp;
+    for (ipp = ipages; *ipp; ipp++) {
+      if ((*ipp)->page_id == page->page_id &&
+          !strcmp(app_id, (*ipp)->app_id)) {
+        ipage = *ipp;
+        break;
+      }
+    }
+    if (!ipage) {
+      // new page
+      ipage = iwdp_ipage_new();
+      ipage->app_id = strdup(app_id);
+      ipage->page_id = page->page_id;
+      ipage->page_num = ++iwi->max_page_num;
+      ht_put(ipage_ht, HT_KEY(ipage->page_num), ipage);
+    }
+    iwdp_update_string(&ipage->title, page->title);
+    iwdp_update_string(&ipage->url, page->url);
