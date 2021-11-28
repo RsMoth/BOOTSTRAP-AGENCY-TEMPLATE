@@ -1378,3 +1378,93 @@ rpc_status iwdp_on_applicationSentListing(rpc_t rpc,
     }
     iwdp_update_string(&ipage->title, page->title);
     iwdp_update_string(&ipage->url, page->url);
+    if (ipage->iws && page->connection_id && iwi->connection_id &&
+        strcmp(iwi->connection_id, page->connection_id)) {
+      // a remote inspector stole stole our page?
+      char *s;
+      if (asprintf(&s, "Page %d/%d claimed by remote %s",
+          iport->port, ipage->page_id, page->connection_id) < 0) {
+        return self->on_error(self, "asprintf failed");
+      }
+      self->on_error(self, "%s", s);
+      free(s);
+      ipage->iws->ipage = NULL;
+    }
+    iwdp_update_string(&ipage->connection_id, page->connection_id);
+  }
+
+  // remove old pages
+  iwdp_ipage_t *ipp;
+  for (ipp = ipages; *ipp; ipp++) {
+    iwdp_ipage_t ipage = *ipp;
+    if (strcmp(ipage->app_id, app_id)) {
+      continue;
+    }
+    const rpc_page_t *pp;
+    for (pp = pages; *pp && (*pp)->page_id != ipage->page_id; pp++) {
+    }
+    if (!*pp) {
+      iwdp_stop_devtools(ipage);
+      ht_remove(ipage_ht, HT_KEY(ipage->page_num));
+      iwdp_ipage_free(ipage);
+    }
+  }
+  free(ipages);
+
+  return RPC_SUCCESS;
+}
+
+rpc_status iwdp_on_applicationSentData(rpc_t rpc,
+    const char *app_id, const char *dest_id,
+    const char *data, const size_t length) {
+  iwdp_iport_t iport = ((iwdp_iwi_t)rpc->state)->iport;
+  iwdp_iws_t iws = ht_get_value(iport->ws_id_to_iws, dest_id);
+  if (!iws) {
+    return RPC_SUCCESS;  // error but don't kill the inspector!
+  }
+  ws_t ws = iws->ws;
+  return ws->send_frame(ws,
+      true, OPCODE_TEXT, false,
+      data, length);
+}
+
+rpc_status iwdp_on_applicationUpdated(rpc_t rpc,
+    const char *app_id, const char *dest_id) {
+  return iwdp_add_app_id(rpc, dest_id);
+}
+
+//
+// STRUCTS
+//
+
+void iwdp_free(iwdp_t self) {
+  if (self) {
+    iwdp_private_t my = self->private_state;
+    if (my) {
+      ht_free(my->device_id_to_iport);
+      free(my->frontend);
+      free(my->sim_wi_socket_addr);
+      memset(my, 0, sizeof(struct iwdp_private));
+      free(my);
+    }
+    memset(self, 0, sizeof(struct iwdp_struct));
+    free(self);
+  }
+}
+
+iwdp_t iwdp_new(const char *frontend, const char *sim_wi_socket_addr) {
+  iwdp_t self = (iwdp_t)malloc(sizeof(struct iwdp_struct));
+  iwdp_private_t my = (iwdp_private_t)malloc(sizeof(struct iwdp_private));
+  if (!self || !my) {
+    iwdp_free(self);
+    return NULL;
+  }
+  memset(self, 0, sizeof(struct iwdp_struct));
+  memset(my, 0, sizeof(struct iwdp_private));
+  self->start = iwdp_start;
+  self->on_accept = iwdp_on_accept;
+  self->on_recv = iwdp_on_recv;
+  self->on_close = iwdp_on_close;
+  self->on_error = iwdp_on_error;
+  self->private_state = my;
+  my->frontend = (frontend ? strdup(frontend) : NULL);
