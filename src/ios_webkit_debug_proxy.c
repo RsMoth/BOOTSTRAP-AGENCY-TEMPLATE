@@ -1631,3 +1631,86 @@ char *iwdp_iports_to_text(iwdp_iport_t *iports, bool want_json,
       }
       if (asprintf(&s,
           "<li><a%s>%s:%d</a> - <a title=\"%s\">%s</a></li>\n",
+          (href ? href : ""), (host ? host : "localhost"),
+          iport->port, iport->device_id,
+          (iport->device_name ? iport->device_name : "?")) < 0) {
+        free(items);
+        return NULL;  // asprintf failed
+      }
+      free(href);
+    }
+    if (s) {
+      sum_len += strlen(s);
+      *item++ = s;
+    }
+  }
+
+  const char *header =
+    (want_json ? "[" : "<html><head><title>iOS Devices</title></head>"
+     "<body>iOS Devices:<p><ol>\n");
+  const char *footer = (want_json ? "]" : "</ol></body></html>");
+
+  // concat
+  size_t length = strlen(header) + sum_len + strlen(footer);
+  char *ret = (char *)calloc(length+1, sizeof(char));
+  if (ret) {
+    char *tail = ret;
+    strcpy(tail, header);
+    tail += strlen(header);
+    for (item = items; *item; item++) {
+      strcpy(tail, *item);
+      tail += strlen(*item);
+      free(*item);
+    }
+    strcpy(tail, footer);
+  }
+  free(items);
+  return ret;
+}
+
+void iwdp_iwi_free(iwdp_iwi_t iwi) {
+  if (iwi) {
+    wi_free(iwi->wi);
+    rpc_free(iwi->rpc);
+    rpc_free_app(iwi->app);
+    // TODO free ht_values?
+    free(iwi->connection_id);
+    ht_free(iwi->app_id_to_true);
+    ht_free(iwi->page_num_to_ipage);
+    memset(iwi, 0, sizeof(struct iwdp_iwi_struct));
+    free(iwi);
+  }
+}
+
+iwdp_iwi_t iwdp_iwi_new(bool partials_supported, bool *is_debug) {
+  iwdp_iwi_t iwi = (iwdp_iwi_t)malloc(sizeof(struct iwdp_iwi_struct));
+  if (!iwi) {
+    return NULL;
+  }
+  memset(iwi, 0, sizeof(struct iwdp_iwi_struct));
+  iwi->type.type = TYPE_IWI;
+  iwi->app_id_to_true = ht_new(HT_STRING_KEYS);
+  iwi->page_num_to_ipage = ht_new(HT_INT_KEYS);
+  rpc_t rpc = rpc_new();
+  wi_t wi = wi_new(partials_supported);
+  if (!rpc || !wi || !iwi->page_num_to_ipage || !iwi->app_id_to_true) {
+    iwdp_iwi_free(iwi);
+    return NULL;
+  }
+  rpc->on_reportSetup = iwdp_on_reportSetup;
+  rpc->on_reportConnectedApplicationList =
+    iwdp_on_reportConnectedApplicationList;
+  rpc->on_applicationConnected = iwdp_on_applicationConnected;
+  rpc->on_applicationDisconnected = iwdp_on_applicationDisconnected;
+  rpc->on_applicationSentListing = iwdp_on_applicationSentListing;
+  rpc->on_applicationSentData = iwdp_on_applicationSentData;
+  rpc->on_applicationUpdated = iwdp_on_applicationUpdated;
+  rpc->send_plist = iwdp_send_plist;
+  rpc->state = iwi;
+  iwi->rpc = rpc;
+  wi->send_packet = iwdp_send_packet;
+  wi->recv_plist = iwdp_recv_plist;
+  wi->state = iwi;
+  wi->is_debug = is_debug;
+  iwi->wi = wi;
+  return iwi;
