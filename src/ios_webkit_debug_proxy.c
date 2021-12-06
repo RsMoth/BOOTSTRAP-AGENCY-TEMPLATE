@@ -1468,3 +1468,89 @@ iwdp_t iwdp_new(const char *frontend, const char *sim_wi_socket_addr) {
   self->on_error = iwdp_on_error;
   self->private_state = my;
   my->frontend = (frontend ? strdup(frontend) : NULL);
+  my->sim_wi_socket_addr = strdup(sim_wi_socket_addr);
+  my->device_id_to_iport = ht_new(HT_STRING_KEYS);
+  if (!my->device_id_to_iport) {
+    iwdp_free(self);
+    return NULL;
+  }
+  return self;
+}
+
+void iwdp_idl_free(iwdp_idl_t idl) {
+  if (idl) {
+    dl_free(idl->dl);
+    memset(idl, 0, sizeof(struct iwdp_idl_struct));
+    free(idl);
+  }
+}
+
+iwdp_idl_t iwdp_idl_new() {
+  iwdp_idl_t idl = (iwdp_idl_t)malloc(sizeof(struct iwdp_idl_struct));
+  dl_t dl = dl_new();
+  if (!idl || !dl) {
+    free(idl);
+    return NULL;
+  }
+  memset(idl, 0, sizeof(struct iwdp_idl_struct));
+  idl->type.type = TYPE_IDL;
+  idl->dl = dl;
+  dl->send_packet = iwdp_send_to_dl;
+  dl->on_attach = iwdp_on_attach;
+  dl->on_detach = iwdp_on_detach;
+  dl->state = idl;
+  return idl;
+}
+
+void iwdp_iport_free(iwdp_iport_t iport) {
+  if (iport) {
+    free(iport->device_id);
+    free(iport->device_name);
+    ht_free(iport->ws_id_to_iws);
+    memset(iport, 0, sizeof(struct iwdp_iport_struct));
+    free(iport);
+  }
+}
+
+iwdp_iport_t iwdp_iport_new() {
+  iwdp_iport_t iport = (iwdp_iport_t)malloc(sizeof(struct iwdp_iport_struct));
+  if (!iport) {
+    return NULL;
+  }
+  memset(iport, 0, sizeof(struct iwdp_iport_struct));
+  iport->type.type = TYPE_IPORT;
+  iport->ws_id_to_iws = ht_new(HT_STRING_KEYS);
+  if (!iport->ws_id_to_iws) {
+    iwdp_iport_free(iport);
+    return NULL;
+  }
+  return iport;
+}
+
+int iwdp_iport_cmp(const void *a, const void *b) {
+  const iwdp_iport_t ipa = *((iwdp_iport_t *)a);
+  const iwdp_iport_t ipb = *((iwdp_iport_t *)b);
+  if (ipa == ipb || !ipa || !ipb) {
+    return (ipa == ipb ? 0 : ipa ? -1 : 1);
+  }
+  uint32_t pa = ipa->port;
+  uint32_t pb = ipb->port;
+  return (pa == pb ? 0 : pa < pb ? -1 : 1);
+}
+
+/*
+ * Escape string value for json output
+ */
+char *iwdp_escape_json_string_val(const char *str) {
+  int len = strlen(str);
+  char* res = (char*)malloc(len * 6 + 1);
+
+  int i, j;
+  for (i = 0, j = 0; i < len; i++, j++) {
+    if (str[i] >= 0 && str[i] < 32) {
+      sprintf(res + j, "\\u%04d", str[i]);
+      j += 5;
+    } else {
+      if (str[i] == '"' || str[i] == '\\') {
+        res[j++] = '\\';
+      }
