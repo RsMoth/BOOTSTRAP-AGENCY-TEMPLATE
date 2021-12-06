@@ -1554,3 +1554,80 @@ char *iwdp_escape_json_string_val(const char *str) {
       if (str[i] == '"' || str[i] == '\\') {
         res[j++] = '\\';
       }
+      res[j] = str[i];
+    }
+  }
+  res[j] = '\0';
+
+  return res;
+}
+
+char *iwdp_iports_to_text(iwdp_iport_t *iports, bool want_json,
+    const char *host) {
+  // count ports
+  size_t n = 0;
+  const iwdp_iport_t *ipp;
+  for (ipp = iports; *ipp; ipp++) {
+    n++;
+  }
+
+  // sort by port
+  qsort(iports, n, sizeof(iwdp_iport_t), iwdp_iport_cmp);
+
+  // get each port as text
+  char **items = (char **)calloc(n+1, sizeof(char *));
+  if (!items) {
+    return NULL;
+  }
+  size_t sum_len = 0;
+  char **item = items;
+  for (ipp = iports; *ipp; ipp++) {
+    iwdp_iport_t iport = *ipp;
+    if (!iport->device_id) {
+      continue; // skip registry port
+    }
+    // Escape/encode device_id & device_name?
+    char *s = NULL;
+    if (want_json) {
+      if (iport->iwi) {
+        char* escaped_device_id = iwdp_escape_json_string_val(
+            iport->device_id ? iport->device_id : "");
+        char* escaped_device_name = iwdp_escape_json_string_val(
+            iport->device_name ? iport->device_name : "");
+
+        int os_version_major = (iport->device_os_version >> 16) & 0xff;
+        int os_version_minor = (iport->device_os_version >> 8) & 0xff;
+        int os_version_patch = iport->device_os_version & 0xff;
+
+        int res = asprintf(&s,
+            "%s{\n"
+            "   \"deviceId\": \"%s\",\n"
+            "   \"deviceName\": \"%s\",\n"
+            "   \"deviceOSVersion\": \"%d.%d.%d\",\n"
+            "   \"url\": \"%s:%d\"\n"
+            "}",
+            (sum_len ? "," : ""), escaped_device_id, escaped_device_name,
+            os_version_major, os_version_minor, os_version_patch,
+            (host ? host : "localhost"), iport->port);
+
+        free(escaped_device_id);
+        free(escaped_device_name);
+
+        if (res < 0) {
+          free(items);
+          return NULL;  // asprintf failed
+        }
+      }
+    } else {
+      // TODO use relative urls instead of "localhost", see:
+      //   http://stackoverflow.com/questions/6016120
+      char *href = NULL;
+      if (iport->iwi) {
+        if (asprintf(&href, " href=\"http://%s:%d/\"",
+            (host ? host : "localhost"), iport->port) < 0) {
+          free(items);
+          return NULL;  // asprintf failed
+        }
+      }
+      if (asprintf(&s,
+          "<li><a%s>%s:%d</a> - <a title=\"%s\">%s</a></li>\n",
