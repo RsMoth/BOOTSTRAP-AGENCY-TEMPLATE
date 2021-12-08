@@ -1714,3 +1714,95 @@ iwdp_iwi_t iwdp_iwi_new(bool partials_supported, bool *is_debug) {
   wi->is_debug = is_debug;
   iwi->wi = wi;
   return iwi;
+}
+
+void iwdp_iws_free(iwdp_iws_t iws) {
+  if (iws) {
+    ws_free(iws->ws);
+    free(iws->ws_id);
+    memset(iws, 0, sizeof(struct iwdp_iws_struct));
+    free(iws);
+  }
+}
+
+iwdp_iws_t iwdp_iws_new(bool *is_debug) {
+  iwdp_iws_t iws = (iwdp_iws_t)malloc(sizeof(struct iwdp_iws_struct));
+  if (!iws) {
+    return NULL;
+  }
+  memset(iws, 0, sizeof(struct iwdp_iws_struct));
+  iws->type.type = TYPE_IWS;
+  iws->ws = ws_new();
+  if (iws->ws) {
+    ws_t ws = iws->ws;
+    ws->send_data = iwdp_send_data;
+    ws->on_http_request = iwdp_on_http_request;
+    ws->on_upgrade = iwdp_on_upgrade;
+    ws->on_frame = iwdp_on_frame;
+    ws->state = iws;
+    ws->is_debug = is_debug;
+  }
+
+  if (!iws->ws) {
+    iwdp_iws_free(iws);
+    return NULL;
+  }
+  return iws;
+}
+
+void iwdp_ifs_free(iwdp_ifs_t ifs) {
+  if (ifs) {
+    memset(ifs, 0, sizeof(struct iwdp_ifs_struct));
+    free(ifs);
+  }
+}
+
+iwdp_ifs_t iwdp_ifs_new() {
+  iwdp_ifs_t ifs = (iwdp_ifs_t)malloc(sizeof(struct iwdp_ifs_struct));
+  if (ifs) {
+    memset(ifs, 0, sizeof(struct iwdp_ifs_struct));
+    ifs->type.type = TYPE_IFS;
+  }
+  return ifs;
+}
+
+void iwdp_ipage_free(iwdp_ipage_t ipage) {
+  if (ipage) {
+    free(ipage->app_id);
+    free(ipage->connection_id);
+    free(ipage->title);
+    free(ipage->url);
+    free(ipage->sender_id);
+    memset(ipage, 0, sizeof(struct iwdp_ipage_struct));
+    free(ipage);
+  }
+}
+
+iwdp_ipage_t iwdp_ipage_new() {
+  iwdp_ipage_t ipage = (iwdp_ipage_t)malloc(sizeof(struct iwdp_ipage_struct));
+  if (ipage) {
+    memset(ipage, 0, sizeof(struct iwdp_ipage_struct));
+  }
+  return ipage;
+}
+
+/*!
+ * @result compare by page_num
+ */
+int iwdp_ipage_cmp(const void *a, const void *b) {
+  const iwdp_ipage_t ipa = *((iwdp_ipage_t *)a);
+  const iwdp_ipage_t ipb = *((iwdp_ipage_t *)b);
+  if (ipa == ipb || !ipa || !ipb) {
+    return (ipa == ipb ? 0 : ipa ? -1 : 1);
+  }
+  uint32_t pna = ipa->page_num;
+  uint32_t pnb = ipb->page_num;
+  return (pna == pnb ? 0 : pna < pnb ? -1 : 1);
+}
+
+/*
+   [{
+   "devtoolsFrontendUrl": "/devtools/devtools.html?host=localhost:9222&page=7",
+   "faviconUrl": "",
+   "thumbnailUrl": "/thumb/http://www.google.com/",
+   "title": "Google",
