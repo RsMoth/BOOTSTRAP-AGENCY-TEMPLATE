@@ -1900,3 +1900,88 @@ char *iwdp_ipages_to_text(iwdp_ipage_t *ipages, bool want_json,
         "<body>Inspectable pages for <a title=\"%s\">%s</a>:<p><ol>\n",
         device_name, device_id, device_name) < 0) {
       return NULL;  // asprintf failed
+    }
+    bool is_chrome_dev = (sum_len > 0 && frontend_url &&
+        !strncasecmp(frontend_url, "chrome-devtools://", 18));
+    if (asprintf(&footer, "</ol>%s</body></html>", (is_chrome_dev ?
+        "<p><b>Note:</b> Your browser may block<sup><a href=\""
+        "https://code.google.com/p/chromium/issues/detail?id=87815"
+        "\"1\">1,</a><a href=\""
+        "https://codereview.chromium.org/12621008#msg11"
+        "\">2</a></sup> the above links with JavaScript console error:<br><tt>"
+        "&nbsp;&nbsp;Not allowed to load local resource: chrome-devtools://..."
+        "</tt><br>To open a link: right-click on the link (control-click on"
+        " Mac), 'Copy Link Address', and paste it into address bar." : "")) < 0) {
+      return NULL;  // asprintf failed
+    }
+  }
+
+  // concat
+  size_t length = strlen(header) + sum_len + strlen(footer);
+  char *ret = (char *)calloc(length+1, sizeof(char));
+  if (ret) {
+    char *tail = ret;
+    strcpy(tail, header);
+    tail += strlen(header);
+    for (item = items; *item; item++) {
+      strcpy(tail, *item);
+      tail += strlen(*item);
+      free(*item);
+    }
+    strcpy(tail, footer);
+  }
+  if (!want_json) {
+    free(header);
+    free(footer);
+  }
+  free(items);
+  return ret;
+}
+
+int iwdp_update_string(char **old_value, const char *new_value) {
+  if (*old_value) {
+    if (new_value && !strcmp(*old_value, new_value)) {
+      return 0;
+    }
+    free(*old_value);
+    *old_value = NULL;
+  }
+  if (new_value) {
+    *old_value = strdup(new_value);
+    if (!*old_value) {
+      return -1;
+    }
+  }
+  return 0;
+}
+
+iwdp_status iwdp_get_content_type(const char *path, bool is_local,
+    char **to_mime) {
+  const char *mime = NULL;
+  if (is_local) {
+#ifdef MAGIC_MIME
+    magic_t fs_m = magic_open(MAGIC_MIME);
+    if (fs_m) {
+      if (!magic_load(fs_m, NULL)) {
+        mime = magic_file(fs_m, path);
+      }
+      magic_close(fs_m);
+    }
+#endif
+  }
+  if (!mime) {
+    char *fext = strrchr(path, '.');
+    if (fext) {
+      ++fext;
+      size_t n = (sizeof(EXT_TO_MIME) / sizeof(EXT_TO_MIME[0]));
+      size_t i;
+      for (i = 0; i < n; i++) {
+        if (!strcasecmp(fext, EXT_TO_MIME[i][0])) {
+          mime = EXT_TO_MIME[i][1];
+          break;
+        }
+      }
+    }
+  }
+  *to_mime = (mime ? strdup(mime) : NULL);
+  return (mime ? IWDP_SUCCESS : IWDP_ERROR);
