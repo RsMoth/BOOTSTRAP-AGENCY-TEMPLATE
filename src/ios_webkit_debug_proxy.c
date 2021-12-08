@@ -1985,3 +1985,4 @@ iwdp_status iwdp_get_content_type(const char *path, bool is_local,
   }
   *to_mime = (mime ? strdup(mime) : NULL);
   return (mime ? IWDP_SUCCESS : IWDP_ERROR);
+}
