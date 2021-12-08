@@ -1806,3 +1806,97 @@ int iwdp_ipage_cmp(const void *a, const void *b) {
    "faviconUrl": "",
    "thumbnailUrl": "/thumb/http://www.google.com/",
    "title": "Google",
+   "url": "http://www.google.com/",
+   "webSocketDebuggerUrl": "ws://localhost:9222/devtools/page/7"
+   }]
+ */
+char *iwdp_ipages_to_text(iwdp_ipage_t *ipages, bool want_json,
+    const char *device_id, const char *device_name,
+    const char *frontend_url, const char *host, int port) {
+  // count pages
+  size_t n = 0;
+  const iwdp_ipage_t *ipp;
+  for (ipp = ipages; *ipp; ipp++) {
+    n++;
+  }
+
+  // sort by page_num
+  qsort(ipages, n, sizeof(iwdp_ipage_t), iwdp_ipage_cmp);
+
+  // get each page as text
+  char **items = (char **)calloc(n+1, sizeof(char *));
+  if (!items) {
+    return NULL;
+  }
+  size_t sum_len = 0;
+  char **item = items;
+  for (ipp = ipages; *ipp; ipp++) {
+    iwdp_ipage_t ipage = *ipp;
+    char *href = NULL;
+    if (frontend_url) {
+      if (asprintf(&href, "%s?ws=%s:%d/devtools/page/%d", frontend_url,
+          (host ? host : "localhost"), port, ipage->page_num) < 0) {
+        return NULL;  // asprintf failed
+      }
+    }
+    char *s = NULL;
+    if (want_json) {
+      char* escaped_title = iwdp_escape_json_string_val(
+          ipage->title ? ipage->title : "");
+      char* escaped_app_id = iwdp_escape_json_string_val(
+          ipage->app_id ? ipage->app_id : "");
+      char* escaped_page_url = iwdp_escape_json_string_val(
+          ipage->url ? ipage->url : "");
+
+      int res = asprintf(&s,
+          "%s{\n"
+          "   \"devtoolsFrontendUrl\": \"%s\",\n"
+          "   \"faviconUrl\": \"\",\n"
+          "   \"thumbnailUrl\": \"/thumb/%s\",\n"
+          "   \"title\": \"%s\",\n"
+          "   \"url\": \"%s\",\n"
+          "   \"webSocketDebuggerUrl\": \"ws://%s:%d/devtools/page/%d\",\n"
+          "   \"appId\": \"%s\"\n"
+          "}",
+          (sum_len ? "," : ""), (href && !ipage->iws ? href : ""),
+          escaped_page_url, escaped_title, escaped_page_url,
+          (host ? host : "localhost"), port, ipage->page_num, escaped_app_id);
+
+      free(escaped_title);
+      free(escaped_app_id);
+      free(escaped_page_url);
+
+      if (res < 0) {
+        free(href);
+        free(items);
+        return NULL;  // asprintf failed
+      }
+    } else {
+      if (asprintf(&s,
+          "<li value=\"%d\"><a%s%s%s title=\"%s\">%s</a></li>\n",
+          ipage->page_num,
+          (href ? (ipage->iws ? " alt=\"" : " href=\"") : ""),
+          (href ? href : ""),
+          (href ? "\"" : ""),
+          (ipage->title ? ipage->title : "?"),
+          (ipage->url ? ipage->url : "?")) < 0) { // encodeURI?
+        free(href);
+        free(items);
+        return NULL;  // asprintf failed
+      }
+    }
+    free(href);
+    if (s) {
+      sum_len += strlen(s);
+      *item++ = s;
+    }
+  }
+
+  char *header = (char *)"[";
+  char *footer = (char *)"]";
+  if (!want_json) {
+    if (asprintf(&header,
+        "<html><head><title>%s</title></head>"
+        "<body>Inspectable pages for <a title=\"%s\">%s</a>:<p><ol>\n",
+        device_name, device_id, device_name) < 0) {
+      return NULL;  // asprintf failed
