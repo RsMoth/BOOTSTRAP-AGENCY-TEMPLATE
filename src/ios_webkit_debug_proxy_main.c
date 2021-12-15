@@ -243,3 +243,98 @@ int iwdpm_configure(iwdpm_t self, int argc, char **argv) {
      "http://chrome-devtools-frontend.appspot.com/static/27.0.1453.93/devtools.html";
   // The port 27753 is from `locate com.apple.webinspectord.plist`
   const char *DEFAULT_SIM_WI_SOCKET_ADDR = "localhost:27753";
+
+  self->config = strdup(DEFAULT_CONFIG);
+  self->frontend = strdup(DEFAULT_FRONTEND);
+  self->sim_wi_socket_addr = strdup(DEFAULT_SIM_WI_SOCKET_ADDR);
+
+  int ret = 0;
+  while (!ret) {
+    int c = getopt_long(argc, argv, "hVu:c:f:Fs:d", longopts, (int *)0);
+    if (c == -1) {
+      break;
+    }
+    switch (c) {
+      case 'h':
+        ret = -1;
+        break;
+      case 'V':
+        printf(
+            "%s\n"
+            "Built with libimobiledevice v%s, libplist v%s\n",
+            PACKAGE_STRING, LIBIMOBILEDEVICE_VERSION, LIBPLIST_VERSION);
+        ret = -2;
+        break;
+      case 'u':
+        {
+          regex_t *re = malloc(sizeof(regex_t));
+          regcomp(re, "^[a-fA-F0-9-]{25,}(:[0-9]+(-[0-9]+)?)?$", REG_EXTENDED);
+          size_t ngroups = re->re_nsub + 1;
+          regmatch_t *groups = calloc(ngroups, sizeof(regmatch_t));
+          bool is_match = !regexec(re, optarg, ngroups, groups, 0);
+          bool has_port = (is_match && groups[1].rm_so >= 0);
+          free(groups);
+          regfree(re);
+          free(self->config);
+          self->config = NULL;
+          if (!is_match) {
+            ret = 2;
+          } else if (!has_port) {
+            if (asprintf(&self->config, "%s%s", optarg, ":9222") < 0) {
+              ret = 2;  // asprintf failed
+            }
+          } else {
+            self->config = strdup(optarg);
+          }
+        }
+        break;
+      case 'c':
+        free(self->config);
+        self->config = strdup(optarg);
+        break;
+      case 's':
+        free(self->sim_wi_socket_addr);
+        self->sim_wi_socket_addr = strdup(optarg);
+        break;
+      case 'f':
+      case 'F':
+        free(self->frontend);
+        self->frontend = (c == 'f' ? strdup(optarg) : NULL);
+        break;
+      case 'd':
+        self->is_debug = true;
+        break;
+      default:
+        ret = 2;
+        break;
+    }
+  }
+
+  if (!ret && ((argc - optind) > 0)) {
+    ret = 2;
+  }
+
+  if (ret && ret != -2) {
+    char *name = strrchr(argv[0], '/');
+    printf(
+        "Usage: %s [OPTIONS]\n"
+        "iOS WebKit Remote Debugging Protocol Proxy v%s.\n"
+        "\n"
+        "By default, the proxy will list all attached iOS devices on:\n"
+        "  http://localhost:9221\n"
+        "and assign each device an incremented port number, e.g.:\n"
+        "  http://localhost:9222\n"
+        "which lists the device's pages and provides inspector access.\n"
+        "\n"
+        "Your attached iOS device(s) must have the inspector enabled via:\n"
+        "  Settings > Safari > Advanced > Web Inspector = ON\n"
+        "and have one or more open browser pages.\n"
+        "\n"
+        "To view the DevTools UI, either use the above links (which use the"
+        " \"frontend\"\nURL noted below) or use Chrome's built-in inspector,"
+        " e.g.:\n"
+        "  chrome-devtools://devtools/bundled/inspector.html?ws=localhost:"
+        "9222/devtools/page/1"
+        "\n\n"
+        "OPTIONS:\n"
+        "\n"
