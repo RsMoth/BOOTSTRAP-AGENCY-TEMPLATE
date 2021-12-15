@@ -156,3 +156,90 @@ iwdp_status iwdpm_remove_fd(iwdp_t iwdp, int fd) {
   sm_t sm = ((iwdpm_t)iwdp->state)->sm;
   return sm->remove_fd(sm, fd);
 }
+sm_status iwdpm_on_accept(sm_t sm, int s_fd, void *s_value,
+    int fd, void **to_value) {
+  iwdp_t iwdp = ((iwdpm_t)sm->state)->iwdp;
+  return iwdp->on_accept(iwdp, s_fd, s_value, fd, to_value);
+}
+sm_status iwdpm_on_sent(sm_t sm, int fd, void *value,
+    const char *buf, ssize_t length) {
+  return SM_SUCCESS;
+}
+sm_status iwdpm_on_recv(sm_t sm, int fd, void *value,
+    const char *buf, ssize_t length) {
+  iwdp_t iwdp = ((iwdpm_t)sm->state)->iwdp;
+  return iwdp->on_recv(iwdp, fd, value, buf, length);
+}
+sm_status iwdpm_on_close(sm_t sm, int fd, void *value, bool is_server) {
+  iwdp_t iwdp = ((iwdpm_t)sm->state)->iwdp;
+  return iwdp->on_close(iwdp, fd, value, is_server);
+}
+
+void iwdpm_create_bridge(iwdpm_t self) {
+  sm_t sm = sm_new(4096);
+  iwdp_t iwdp = iwdp_new(self->frontend, self->sim_wi_socket_addr);
+  if (!sm || !iwdp) {
+    sm_free(sm);
+    return;
+  }
+  self->sm = sm;
+  self->iwdp = iwdp;
+  iwdp->subscribe = iwdpm_subscribe;
+  iwdp->attach = iwdpm_attach;
+  iwdp->select_port = iwdpm_select_port;
+  iwdp->listen = iwdpm_listen;
+  iwdp->connect = iwdpm_connect;
+  iwdp->send = iwdpm_send;
+  iwdp->add_fd = iwdpm_add_fd;
+  iwdp->remove_fd = iwdpm_remove_fd;
+  iwdp->state = self;
+  iwdp->is_debug = &self->is_debug;
+  sm->on_accept = iwdpm_on_accept;
+  sm->on_sent = iwdpm_on_sent;
+  sm->on_recv = iwdpm_on_recv;
+  sm->on_close = iwdpm_on_close;
+  sm->state = self;
+  sm->is_debug = &self->is_debug;
+}
+
+
+void iwdpm_free(iwdpm_t self) {
+  if (self) {
+    pc_free(self->pc);
+    iwdp_free(self->iwdp);
+    sm_free(self->sm);
+    free(self->config);
+    free(self->frontend);
+    free(self->sim_wi_socket_addr);
+    memset(self, 0, sizeof(struct iwdpm_struct));
+    free(self);
+  }
+}
+
+iwdpm_t iwdpm_new(int argc, char **argv, int *to_exit) {
+  iwdpm_t self = malloc(sizeof(struct iwdpm_struct));
+  if (!self) {
+    return NULL;
+  }
+  memset(self, 0, sizeof(struct iwdpm_struct));
+  return self;
+}
+
+int iwdpm_configure(iwdpm_t self, int argc, char **argv) {
+
+  static struct option longopts[] = {
+    {"udid", 1, NULL, 'u'},
+    {"config", 1, NULL, 'c'},
+    {"frontend", 1, NULL, 'f'},
+    {"no-frontend", 0, NULL, 'F'},
+    {"simulator-webinspector", 1, NULL, 's'},
+    {"debug", 0, NULL, 'd'},
+    {"help", 0, NULL, 'h'},
+    {"version", 0, NULL, 'V'},
+    {NULL, 0, NULL, 0}
+  };
+  const char *DEFAULT_CONFIG = "null:9221,:9222-9322";
+  const char *DEFAULT_FRONTEND =
+     "http://chrome-devtools-frontend.appspot.com/static/27.0.1453.93/devtools.html";
+  // The port 27753 is from `locate com.apple.webinspectord.plist`
+  const char *DEFAULT_SIM_WI_SOCKET_ADDR = "localhost:27753";
