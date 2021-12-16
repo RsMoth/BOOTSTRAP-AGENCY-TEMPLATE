@@ -6,4 +6,11 @@
 #endif
 
 #include <stdio.h>
-#include <stdlib.
+#include <stdlib.h>
+#include <string.h>
+
+#ifndef HAVE_REGEX_H
+#include <pcre.h>
+#include <pcreposix.h>
+#else
+#include <regex.h>
