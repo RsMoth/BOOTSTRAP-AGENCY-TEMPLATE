@@ -21,4 +21,8 @@
 #include "getline.h"
 
 
-struct pc_entry_struc
+struct pc_entry_struct;
+typedef struct pc_entry_struct *pc_entry_t;
+
+struct pc_entry_struct {
+  const ch
