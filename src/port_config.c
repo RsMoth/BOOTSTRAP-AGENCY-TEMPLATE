@@ -25,4 +25,9 @@ struct pc_entry_struct;
 typedef struct pc_entry_struct *pc_entry_t;
 
 struct pc_entry_struct {
-  const ch
+  const char *device_id;
+  int min_port;
+  int max_port;
+
+  // we need a list of these, so put the link here
+  
