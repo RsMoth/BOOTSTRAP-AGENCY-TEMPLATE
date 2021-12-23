@@ -41,4 +41,6 @@ struct pc_struct {
 };
 
 pc_t pc_new() {
-  pc_t self = malloc(sizeof(struct
+  pc_t self = malloc(sizeof(struct pc_struct));
+  if (self) {
+    memset(self, 0, sizeof(struct pc_struct));
