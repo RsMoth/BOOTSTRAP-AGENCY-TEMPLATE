@@ -30,4 +30,10 @@ struct pc_entry_struct {
   int max_port;
 
   // we need a list of these, so put the link here
-  
+  pc_entry_t next;
+};
+
+struct pc_struct {
+  regex_t *re;
+  regmatch_t *groups;
+  pc_entry_t head;
