@@ -37,3 +37,8 @@ struct pc_struct {
   regex_t *re;
   regmatch_t *groups;
   pc_entry_t head;
+  pc_entry_t tail;
+};
+
+pc_t pc_new() {
+  pc_t self = malloc(sizeof(struct
