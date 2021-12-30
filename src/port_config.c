@@ -44,3 +44,10 @@ pc_t pc_new() {
   pc_t self = malloc(sizeof(struct pc_struct));
   if (self) {
     memset(self, 0, sizeof(struct pc_struct));
+  }
+  return self;
+}
+
+void pc_clear(pc_t self) {
+  if (self) {
+    pc_entry_t e = self->head;
