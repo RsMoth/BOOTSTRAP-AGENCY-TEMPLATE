@@ -53,4 +53,9 @@ void pc_clear(pc_t self) {
     pc_entry_t e = self->head;
     while (e) {
       pc_entry_t next = e->next;
-      memset(e, 0, sizeof(struct pc_entr
+      memset(e, 0, sizeof(struct pc_entry_struct));
+      free(e);
+      e = next;
+    }
+    self->head = NULL;
+    self->tail =
