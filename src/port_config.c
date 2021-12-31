@@ -58,4 +58,12 @@ void pc_clear(pc_t self) {
       e = next;
     }
     self->head = NULL;
-    self->tail =
+    self->tail = NULL;
+  }
+}
+
+void pc_free(pc_t self) {
+  if (self) {
+    pc_clear(self);
+    free(self->groups);
+    if (
