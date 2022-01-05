@@ -66,4 +66,8 @@ void pc_free(pc_t self) {
   if (self) {
     pc_clear(self);
     free(self->groups);
-    if (
+    if (self->re) {
+      regfree(self->re);
+    }
+    memset(self, 0, sizeof(struct pc_struct));
+    free(se
