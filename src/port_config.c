@@ -70,4 +70,9 @@ void pc_free(pc_t self) {
       regfree(self->re);
     }
     memset(self, 0, sizeof(struct pc_struct));
-    free(se
+    free(self);
+  }
+}
+
+void pc_add(pc_t self, const char *device_id, int min_port, int max_port) {
+  pc_entry_t e = malloc(si
