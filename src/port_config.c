@@ -75,4 +75,6 @@ void pc_free(pc_t self) {
 }
 
 void pc_add(pc_t self, const char *device_id, int min_port, int max_port) {
-  pc_entry_t e = malloc(si
+  pc_entry_t e = malloc(sizeof(struct pc_entry_struct));
+  e->device_id = device_id;
+  e->min_port = min_port
