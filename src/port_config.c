@@ -81,4 +81,11 @@ void pc_add(pc_t self, const char *device_id, int min_port, int max_port) {
   e->max_port = max_port;
   e->next = NULL;
   if (self->tail) {
-    self->tail->next =
+    self->tail->next = e;
+  } else {
+    self->head = e;
+  }
+  self->tail = e;
+}
+
+int pc_parse
