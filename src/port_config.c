@@ -98,4 +98,7 @@ int pc_parse(pc_t self, const char *line, size_t len,
           "[ \t]*(-?[0-9]+)"
           "([ \t]*-[ \t]*([0-9]+))?"
           "[ \t]*$", REG_EXTENDED | REG_ICASE)) {
-      
+      perror("Internal error: bad regex?");
+      return -1;
+    }
+    size_t ngroups =
