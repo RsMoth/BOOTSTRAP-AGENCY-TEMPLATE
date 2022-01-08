@@ -95,4 +95,7 @@ int pc_parse(pc_t self, const char *line, size_t len,
     if (regcomp(self->re,
           "^[ \t]*"
           "(([a-fA-F0-9-]{25,}|\\*|null)[ \t]*:?|:)"
-          "[ \t]*(-?[0-9]+
+          "[ \t]*(-?[0-9]+)"
+          "([ \t]*-[ \t]*([0-9]+))?"
+          "[ \t]*$", REG_EXTENDED | REG_ICASE)) {
+      
