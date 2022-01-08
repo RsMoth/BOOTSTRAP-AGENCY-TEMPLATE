@@ -92,4 +92,7 @@ int pc_parse(pc_t self, const char *line, size_t len,
     char **to_device_id, int *to_min_port, int *to_max_port) {
   if (!self->re) {
     self->re = malloc(sizeof(regex_t));
-    if (regcomp(self
+    if (regcomp(self->re,
+          "^[ \t]*"
+          "(([a-fA-F0-9-]{25,}|\\*|null)[ \t]*:?|:)"
+          "[ \t]*(-?[0-9]+
