@@ -106,4 +106,6 @@ int pc_parse(pc_t self, const char *line, size_t len,
   }
   size_t ngroups = self->re->re_nsub + 1;
   regmatch_t *groups = self->groups;
-  char *line2 = calloc(len
+  char *line2 = calloc(len+1, sizeof(char));
+  memcpy(line2, line, len);
+  int is_not_match = regexec(self->re, line2, ngro
