@@ -101,4 +101,7 @@ int pc_parse(pc_t self, const char *line, size_t len,
       perror("Internal error: bad regex?");
       return -1;
     }
-    size_t ngroups =
+    size_t ngroups = self->re->re_nsub + 1;
+    self->groups = calloc(ngroups, sizeof(regmatch_t));
+  }
+  size_t ngroups = 
