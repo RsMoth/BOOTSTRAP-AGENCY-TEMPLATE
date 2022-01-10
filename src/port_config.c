@@ -104,4 +104,6 @@ int pc_parse(pc_t self, const char *line, size_t len,
     size_t ngroups = self->re->re_nsub + 1;
     self->groups = calloc(ngroups, sizeof(regmatch_t));
   }
-  size_t ngroups = 
+  size_t ngroups = self->re->re_nsub + 1;
+  regmatch_t *groups = self->groups;
+  char *line2 = calloc(len
