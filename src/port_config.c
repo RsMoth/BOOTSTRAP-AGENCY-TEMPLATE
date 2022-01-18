@@ -115,4 +115,6 @@ int pc_parse(pc_t self, const char *line, size_t len,
   }
   char *device_id;
   if (groups[2].rm_so >= 0) {
-    size_t len = groups[2].rm_eo - groups[2].rm
+    size_t len = groups[2].rm_eo - groups[2].rm_so;
+    if (strncasecmp("null", line + groups[2].rm_so, len)) {
+      device_id = strndup(line +
