@@ -114,3 +114,5 @@ int pc_parse(pc_t self, const char *line, size_t len,
     return -1;
   }
   char *device_id;
+  if (groups[2].rm_so >= 0) {
+    size_t len = groups[2].rm_eo - groups[2].rm
