@@ -127,4 +127,8 @@ int pc_parse(pc_t self, const char *line, size_t len,
   int min_port = strtol(line + groups[3].rm_so, NULL, 0);
   int max_port = min_port;
   if (groups[4].rm_so >= 0 && groups[5].rm_so >= 0) {
-    max_port = strtol(line + grou
+    max_port = strtol(line + groups[5].rm_so, NULL, 0);
+  }
+  *to_device_id = device_id;
+  *to_min_port = min_port;
+  *to_m
