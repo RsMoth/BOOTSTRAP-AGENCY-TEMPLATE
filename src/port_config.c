@@ -122,4 +122,7 @@ int pc_parse(pc_t self, const char *line, size_t len,
       device_id = NULL;
     }
   } else {
-    devi
+    device_id = strdup("*");
+  }
+  int min_port = strtol(line + groups[3].rm_so, NULL, 0);
+  int max_po
