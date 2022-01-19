@@ -117,4 +117,9 @@ int pc_parse(pc_t self, const char *line, size_t len,
   if (groups[2].rm_so >= 0) {
     size_t len = groups[2].rm_eo - groups[2].rm_so;
     if (strncasecmp("null", line + groups[2].rm_so, len)) {
-      device_id = strndup(line +
+      device_id = strndup(line + groups[2].rm_so, len);
+    } else {
+      device_id = NULL;
+    }
+  } else {
+    devi
