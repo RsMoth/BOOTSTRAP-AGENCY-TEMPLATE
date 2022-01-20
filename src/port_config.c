@@ -135,4 +135,7 @@ int pc_parse(pc_t self, const char *line, size_t len,
   return 0;
 }
 
-const char *pc_add_line(pc_t self, const char *line, si
+const char *pc_add_line(pc_t self, const char *line, size_t len) {
+  const char *curr = line;
+  const char *stop = line + len;
+  while (curr < st
