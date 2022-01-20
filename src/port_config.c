@@ -131,4 +131,8 @@ int pc_parse(pc_t self, const char *line, size_t len,
   }
   *to_device_id = device_id;
   *to_min_port = min_port;
-  *to_m
+  *to_max_port = max_port;
+  return 0;
+}
+
+const char *pc_add_line(pc_t self, const char *line, si
