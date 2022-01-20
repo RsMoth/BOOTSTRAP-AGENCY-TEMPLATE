@@ -138,4 +138,8 @@ int pc_parse(pc_t self, const char *line, size_t len,
 const char *pc_add_line(pc_t self, const char *line, size_t len) {
   const char *curr = line;
   const char *stop = line + len;
-  while (curr < st
+  while (curr < stop) {
+    while (curr < stop && (*curr == ' ' || *curr == '\t')) {
+      curr++;
+    }
+    co
