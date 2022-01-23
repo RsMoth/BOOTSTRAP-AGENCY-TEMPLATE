@@ -142,4 +142,6 @@ const char *pc_add_line(pc_t self, const char *line, size_t len) {
     while (curr < stop && (*curr == ' ' || *curr == '\t')) {
       curr++;
     }
-    co
+    const char *end = curr;
+    while (end < stop &&
+        *end && *end != '\n' && *end != '#
