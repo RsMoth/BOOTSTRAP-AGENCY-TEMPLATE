@@ -144,4 +144,9 @@ const char *pc_add_line(pc_t self, const char *line, size_t len) {
     }
     const char *end = curr;
     while (end < stop &&
-        *end && *end != '\n' && *end != '#
+        *end && *end != '\n' && *end != '#' && *end != ',') {
+      end++;
+    }
+    if (curr < end) {
+      char *device_id;
+      
