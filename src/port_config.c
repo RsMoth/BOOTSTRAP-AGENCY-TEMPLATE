@@ -149,4 +149,7 @@ const char *pc_add_line(pc_t self, const char *line, size_t len) {
     }
     if (curr < end) {
       char *device_id;
-      
+      int min_port;
+      int max_port;
+      if (pc_parse(self, curr, end - curr,
+         
