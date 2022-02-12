@@ -170,4 +170,8 @@ int pc_add_file(pc_t self, const char *filename) {
     return -1;
   }
 
-  int 
+  int ret = 0;
+  int line_num;
+  char *line = NULL;
+  size_t line_capacity = 0;
+  for (line_nu
