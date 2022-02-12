@@ -162,3 +162,6 @@ const char *pc_add_line(pc_t self, const char *line, size_t len) {
   }
   return NULL;
 }
+
+int pc_add_file(pc_t self, const char *filename) {
+  FILE *f = fopen(filename, "r
