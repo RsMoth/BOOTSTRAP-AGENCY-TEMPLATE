@@ -164,4 +164,10 @@ const char *pc_add_line(pc_t self, const char *line, size_t len) {
 }
 
 int pc_add_file(pc_t self, const char *filename) {
-  FILE *f = fopen(filename, "r
+  FILE *f = fopen(filename, "rt");
+  if (!f) {
+    fprintf(stderr, "Unknown file: %s\n", filename);
+    return -1;
+  }
+
+  int 
