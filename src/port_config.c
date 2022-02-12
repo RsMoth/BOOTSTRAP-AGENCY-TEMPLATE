@@ -155,4 +155,10 @@ const char *pc_add_line(pc_t self, const char *line, size_t len) {
             &device_id, &min_port, &max_port)) {
         return curr;
       }
-      pc_add(self, device_id, min_port
+      pc_add(self, device_id, min_port, max_port);
+    }
+    if (*end != ',') break;
+    curr = end+1;
+  }
+  return NULL;
+}
