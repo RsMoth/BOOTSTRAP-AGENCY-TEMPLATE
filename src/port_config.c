@@ -181,4 +181,12 @@ int pc_add_file(pc_t self, const char *filename) {
     if (error) {
       ret = -1;
       fprintf(stderr, "Ignoring %s:%d: %.*s", filename, line_num,
-          (int)(error
+          (int)(error-line), error);
+    }
+  }
+  free(line);
+  fclose(f);
+  return ret;
+}
+
+const pc_entry_t pc
