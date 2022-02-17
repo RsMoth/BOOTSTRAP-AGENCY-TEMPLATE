@@ -189,4 +189,6 @@ int pc_add_file(pc_t self, const char *filename) {
   return ret;
 }
 
-const pc_entry_t pc
+const pc_entry_t pc_find(pc_t self, const char *device_id) {
+  pc_entry_t e;
+  for (e = self->head; e; e = 
