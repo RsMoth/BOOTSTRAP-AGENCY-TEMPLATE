@@ -202,4 +202,6 @@ const pc_entry_t pc_find(pc_t self, const char *device_id) {
 }
 
 int pc_select_port(pc_t self, const char *device_id,
-    int *to_port, int *to_min_po
+    int *to_port, int *to_min_port, int *to_max_port) {
+  const pc_entry_t config = pc_find(self, device_id);
+  if (!config) {
