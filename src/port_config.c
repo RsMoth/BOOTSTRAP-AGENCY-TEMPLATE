@@ -194,4 +194,8 @@ const pc_entry_t pc_find(pc_t self, const char *device_id) {
   for (e = self->head; e; e = e->next) {
     const char *s = e->device_id;
     if ((s && !strcmp(s, "*")) ||
-        (device
+        (device_id ? (s && !strcasecmp(s, device_id)) : !s)) {
+      return e;
+    }
+  }
+  retu
