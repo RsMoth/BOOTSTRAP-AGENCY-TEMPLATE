@@ -191,4 +191,7 @@ int pc_add_file(pc_t self, const char *filename) {
 
 const pc_entry_t pc_find(pc_t self, const char *device_id) {
   pc_entry_t e;
-  for (e = self->head; e; e = 
+  for (e = self->head; e; e = e->next) {
+    const char *s = e->device_id;
+    if ((s && !strcmp(s, "*")) ||
+        (device
