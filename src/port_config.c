@@ -198,4 +198,8 @@ const pc_entry_t pc_find(pc_t self, const char *device_id) {
       return e;
     }
   }
-  retu
+  return NULL;
+}
+
+int pc_select_port(pc_t self, const char *device_id,
+    int *to_port, int *to_min_po
