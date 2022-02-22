@@ -208,3 +208,7 @@ int pc_select_port(pc_t self, const char *device_id,
     *to_min_port = -1;
     *to_max_port = -1;
     *to_port = -1;
+    return -1;
+  }
+  *to_min_port = config->min_port;
+  *to_max_port = config->max_p
