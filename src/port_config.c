@@ -214,3 +214,8 @@ int pc_select_port(pc_t self, const char *device_id,
   *to_max_port = config->max_port;
   if (*to_port >= 0 &&
       (*to_port < *to_min_port || *to_port > *to_max_port)) {
+    *to_port = -1;
+  }
+  return 0;
+}
+
