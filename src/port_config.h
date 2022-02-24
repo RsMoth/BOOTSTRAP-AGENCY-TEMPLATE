@@ -54,3 +54,17 @@ void pc_add(pc_t self, const char *device_id, int min_port, int max_port);
 const char *pc_add_line(pc_t self, const char *line, size_t len);
 
 // Calls pc_add_line for every line in a file.
+// @param filename path
+// @result 0 if success
+int pc_add_file(pc_t self, const char *filename);
+
+// Looks up the device_id and sets the to_*ports.
+int pc_select_port(pc_t self, const char *device_id,
+                   int *to_port, int *to_min_port, int *to_max_port);
+
+
+#ifdef	__cplusplus
+}
+#endif
+
+#endif	/* PORT_CONFIG_H */
