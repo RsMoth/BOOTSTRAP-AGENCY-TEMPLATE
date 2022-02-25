@@ -352,3 +352,99 @@ rpc_status rpc_recv_applicationDisconnected(rpc_t self, const plist_t args) {
 
 /*
 _rpc_applicationSentListing:
+string appId = args[“WIRApplicationIdentifierKey”]
+for val in args[“WIRListingKey”].values():
+string pageId = val[“WIRPageIdentifierKey”]
+pageInfo.title = val[“WIRTitleKey”]
+pageInfo.url = val[“WIRURLKey”]
+pageInfo.connectionId = val[“WIRConnectionIdentifierKey”]
+<key>WIRApplicationIdentifierKey</key>  <string>com.apple.mobilesafari</string>
+<key>WIRListingKey</key>
+<dict>
+<key>1</key>
+<dict>
+<key>WIRConnectionIdentifierKey</key>
+<string>4B2550E4-13D6-4902-A48E-B45D5B23215B</string>
+<key>WIRPageIdentifierKey</key>   <integer>1</integer>
+<key>WIRTitleKey</key>   <string>Cannot Open Page</string>
+<key>WIRURLKey</key>
+<string>x-appbundle:///StandardError.html</string>
+</dict>
+</dict>
+ */
+rpc_status rpc_recv_applicationSentListing(rpc_t self, const plist_t args) {
+  char *app_id = NULL;
+  rpc_page_t *pages = NULL;
+  plist_t item = plist_dict_get_item(args, "WIRListingKey");
+  rpc_status ret;
+  if (!rpc_dict_get_required_string(args, "WIRApplicationIdentifierKey",
+        &app_id) &&
+      !rpc_parse_pages(item, &pages) &&
+      !self->on_applicationSentListing(self, app_id, pages)) {
+    ret = RPC_SUCCESS;
+  } else {
+    ret = RPC_ERROR;
+  }
+  free(app_id);
+  rpc_free_pages(pages);
+  return ret;
+}
+
+/*
+_rpc_applicationSentData:
+string appId = args[“WIRApplicationIdentifierKey”]
+string socketKey = args[“WIRDestinationKey”]
+string jsonData = args[“WIRMessageDataKey”]
+<key>WIRApplicationIdentifierKey</key>
+<string>com.apple.mobilesafari</string>
+<key>WIRDestinationKey</key>
+<string>C1EAD225-D6BC-44B9-9089-2D7CC2D2204C</string>
+<key>WIRMessageDataKey</key>
+<data>
+{"result":{"result":true},"id":1}
+</data>
+ */
+rpc_status rpc_recv_applicationSentData(rpc_t self, const plist_t args) {
+  char *app_id = NULL;
+  char *dest_id = NULL;
+  char *data = NULL;
+  size_t length = 0;
+  rpc_status ret;
+  if (!rpc_dict_get_required_string(args, "WIRApplicationIdentifierKey",
+        &app_id) &&
+      !rpc_dict_get_required_string(args, "WIRDestinationKey",
+        &dest_id) &&
+      !rpc_dict_get_required_data(args, "WIRMessageDataKey",
+        &data, &length) &&
+      !self->on_applicationSentData(self,
+        app_id, dest_id, data, length)) {
+    ret = RPC_SUCCESS;
+  } else {
+    ret = RPC_ERROR;
+  }
+  free(app_id);
+  free(dest_id);
+  free(data);
+  return ret;
+}
+
+/*
+_rpc_applicationUpdated: <dict>
+<key>WIRApplicationBundleIdentifierKey</key>
+<string>com.apple.WebKit.WebContent</string>
+<key>WIRHostApplicationIdentifierKey</key>
+<string>PID:409</string>
+<key>WIRApplicationNameKey</key>
+<string></string>
+<key>WIRIsApplicationProxyKey</key>
+<true/>
+<key>WIRIsApplicationActiveKey</key>
+<integer>0</integer>
+<key>WIRApplicationIdentifierKey</key>
+<string>PID:536</string>
+</dict>
+
+OR
+
+<key>WIRApplicationBundleIdentifierKey</key>
+<string>com.apple.mobilesafari</string>
