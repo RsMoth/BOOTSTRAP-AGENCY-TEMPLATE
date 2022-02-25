@@ -171,3 +171,97 @@ rpc_status rpc_send_forwardGetListing(rpc_t self, const char *connection_id,
   plist_dict_set_item(args, "WIRApplicationIdentifierKey",
       plist_new_string(app_id));
   rpc_status ret = rpc_send_msg(self, selector, args);
+  plist_free(args);
+  return ret;
+}
+
+/*
+_rpc_forwardIndicateWebView:
+<key>WIRApplicationIdentifierKey</key> <string>com.apple.mobilesafari</string>
+<key>WIRConnectionIdentifierKey</key>
+<string>4B2550E4-13D6-4902-A48E-B45D5B23215B</string>
+<key>WIRIndicateEnabledKey</key>  <true/>
+<key>WIRPageIdentifierKey</key>   <integer>1</integer>
+ */
+rpc_status rpc_send_forwardIndicateWebView(rpc_t self, const char *connection_id,
+    const char *app_id, uint32_t page_id, bool is_enabled) {
+  if (!connection_id || !app_id) {
+    return RPC_ERROR;
+  }
+  const char *selector = "_rpc_forwardIndicateWebView:";
+  plist_t args = rpc_new_args(connection_id);
+  plist_dict_set_item(args, "WIRApplicationIdentifierKey",
+      plist_new_string(app_id));
+  plist_dict_set_item(args, "WIRPageIdentifierKey",
+      plist_new_uint(page_id));
+  plist_dict_set_item(args, "WIRIndicateEnabledKey",
+      plist_new_bool(is_enabled));
+  rpc_status ret = rpc_send_msg(self, selector, args);
+  plist_free(args);
+  return ret;
+}
+
+/*
+_rpc_forwardSocketSetup:
+<key>WIRApplicationIdentifierKey</key> <string>com.apple.mobilesafari</string>
+<key>WIRConnectionIdentifierKey</key>
+<string>4B2550E4-13D6-4902-A48E-B45D5B23215B</string>
+<key>WIRPageIdentifierKey</key>   <integer>1</integer>
+<key>WIRSenderKey</key>
+<string>C1EAD225-D6BC-44B9-9089-2D7CC2D2204C</string>
+ */
+rpc_status rpc_send_forwardSocketSetup(rpc_t self, const char *connection_id,
+    const char *app_id, uint32_t page_id, const char *sender_id) {
+  if (!connection_id || !app_id || !sender_id) {
+    return RPC_ERROR;
+  }
+  const char *selector = "_rpc_forwardSocketSetup:";
+  plist_t args = rpc_new_args(connection_id);
+  plist_dict_set_item(args, "WIRApplicationIdentifierKey",
+      plist_new_string(app_id));
+  plist_dict_set_item(args, "WIRAutomaticallyPause",
+      plist_new_bool(false));
+  plist_dict_set_item(args, "WIRPageIdentifierKey",
+      plist_new_uint(page_id));
+  plist_dict_set_item(args, "WIRSenderKey",
+      plist_new_string(sender_id));
+  rpc_status ret = rpc_send_msg(self, selector, args);
+  plist_free(args);
+  return ret;
+}
+
+/*
+_rpc_forwardSocketData:
+<key>WIRApplicationIdentifierKey</key>
+<string>com.apple.mobilesafari</string>
+<key>WIRConnectionIdentifierKey</key>
+<string>4B2550E4-13D6-4902-A48E-B45D5B23215B</string>
+<key>WIRPageIdentifierKey</key>
+<integer>1</integer>
+<key>WIRSenderKey</key>
+<string>C1EAD225-D6BC-44B9-9089-2D7CC2D2204C</string>
+<key>WIRSocketDataKey **data**</key>
+<data>
+{"method":"Debugger.causesRecompilation","id":1}
+</data>
+ */
+rpc_status rpc_send_forwardSocketData(rpc_t self, const char *connection_id,
+    const char *app_id, uint32_t page_id, const char *sender_id,
+    const char *data, size_t length) {
+  if (!connection_id || !app_id || !sender_id || !data) {
+    return RPC_ERROR;
+  }
+  const char *selector = "_rpc_forwardSocketData:";
+  plist_t args = rpc_new_args(connection_id);
+  plist_dict_set_item(args, "WIRApplicationIdentifierKey",
+      plist_new_string(app_id));
+  plist_dict_set_item(args, "WIRPageIdentifierKey",
+      plist_new_uint(page_id));
+  plist_dict_set_item(args, "WIRSenderKey",
+      plist_new_string(sender_id));
+  plist_dict_set_item(args, "WIRSocketDataKey",
+      plist_new_data(data, length));
+  rpc_status ret = rpc_send_msg(self, selector, args);
+  plist_free(args);
+  return ret;
+}
