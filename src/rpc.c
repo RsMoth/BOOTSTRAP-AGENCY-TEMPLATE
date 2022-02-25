@@ -265,3 +265,90 @@ rpc_status rpc_send_forwardSocketData(rpc_t self, const char *connection_id,
   plist_free(args);
   return ret;
 }
+
+/*
+_rpc_forwardDidClose:
+?
+ */
+rpc_status rpc_send_forwardDidClose(rpc_t self, const char *connection_id,
+    const char *app_id, uint32_t page_id, const char *sender_id) {
+  if (!connection_id || !app_id || !sender_id) {
+    return RPC_ERROR;
+  }
+  const char *selector = "_rpc_forwardDidClose:";
+  plist_t args = rpc_new_args(connection_id);
+  plist_dict_set_item(args, "WIRApplicationIdentifierKey",
+      plist_new_string(app_id));
+  plist_dict_set_item(args, "WIRPageIdentifierKey",
+      plist_new_uint(page_id));
+  plist_dict_set_item(args, "WIRSenderKey",
+      plist_new_string(sender_id));
+  rpc_status ret = rpc_send_msg(self, selector, args);
+  plist_free(args);
+  return ret;
+}
+
+
+//
+// RECV
+//
+
+/*
+ */
+rpc_status rpc_recv_reportSetup(rpc_t self, const plist_t args) {
+  if (plist_get_node_type(args) != PLIST_DICT) {
+    return RPC_ERROR;
+  }
+  return self->on_reportSetup(self);
+}
+
+/*
+   <key>WIRApplicationDictionaryKey</key>
+   <dict>
+   <key>com.apple.mobilesafari</key>
+   <dict>
+   <key>WIRApplicationIdentifierKey</key>
+   <string>com.apple.mobilesafari</string>
+   <key>WIRApplicationNameKey</key>    <string>Safari</string>
+   <key>WIRIsApplicationProxyKey</key> <false/>
+   </dict>
+   </dict>
+ */
+rpc_status rpc_recv_reportConnectedApplicationList(rpc_t self,
+    const plist_t args) {
+  plist_t item = plist_dict_get_item(args, "WIRApplicationDictionaryKey");
+  rpc_app_t *apps = NULL;
+  rpc_status ret = rpc_parse_apps(item, &apps);
+  if (!ret) {
+    ret = self->on_reportConnectedApplicationList(self, apps);
+    rpc_free_apps(apps);
+  }
+  return ret;
+}
+
+/*
+ */
+rpc_status rpc_recv_applicationConnected(rpc_t self, const plist_t args) {
+  rpc_app_t app = NULL;
+  rpc_status ret = rpc_parse_app(args, &app);
+  if (!ret) {
+    ret = self->on_applicationConnected(self, app);
+    rpc_free_app(app);
+  }
+  return ret;
+}
+
+/*
+ */
+rpc_status rpc_recv_applicationDisconnected(rpc_t self, const plist_t args) {
+  rpc_app_t app = NULL;
+  rpc_status ret = rpc_parse_app(args, &app);
+  if (!ret) {
+    ret = self->on_applicationDisconnected(self, app);
+    rpc_free_app(app);
+  }
+  return ret;
+}
+
+/*
+_rpc_applicationSentListing:
