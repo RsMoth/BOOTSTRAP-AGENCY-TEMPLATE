@@ -448,3 +448,91 @@ OR
 
 <key>WIRApplicationBundleIdentifierKey</key>
 <string>com.apple.mobilesafari</string>
+<key>WIRApplicationNameKey</key>
+<string>Safari</string>
+<key>WIRIsApplicationProxyKey</key>
+<false/>
+<key>WIRIsApplicationActiveKey</key>
+<integer>0</integer>
+<key>WIRApplicationIdentifierKey</key>
+<string>PID:730</string>
+*/
+rpc_status rpc_recv_applicationUpdated(rpc_t self, const plist_t args) {
+  char *app_id = NULL;
+  char *dest_id = NULL;
+  rpc_status ret;
+  if (!rpc_dict_get_required_string(args, "WIRHostApplicationIdentifierKey", &app_id)) {
+    if (!rpc_dict_get_required_string(args, "WIRApplicationIdentifierKey", &dest_id) &&
+      !self->on_applicationUpdated(self, app_id, dest_id)) {
+      ret = RPC_SUCCESS;
+    } else {
+      ret = RPC_ERROR;
+    }
+  } else if (!rpc_dict_get_required_string(args, "WIRApplicationNameKey", &app_id) &&
+             !rpc_dict_get_required_string(args, "WIRApplicationIdentifierKey", &dest_id) &&
+             !self->on_applicationUpdated(self, app_id, dest_id)) {
+    ret = RPC_SUCCESS;
+  } else {
+    ret = RPC_ERROR;
+  }
+  free(app_id);
+  free(dest_id);
+  return ret;
+}
+
+rpc_status rpc_recv_msg(rpc_t self, const char *selector, const plist_t args) {
+  if (!selector) {
+    return RPC_ERROR;
+  }
+
+  if (!strcmp(selector, "_rpc_reportSetup:")) {
+    if (!rpc_recv_reportSetup(self, args)) {
+      return RPC_SUCCESS;
+    }
+  } else if (!strcmp(selector, "_rpc_reportConnectedApplicationList:")) {
+    if (!rpc_recv_reportConnectedApplicationList(self, args)) {
+      return RPC_SUCCESS;
+    }
+  } else if (!strcmp(selector, "_rpc_applicationConnected:")) {
+    if (!rpc_recv_applicationConnected(self, args)) {
+      return RPC_SUCCESS;
+    }
+  } else if (!strcmp(selector, "_rpc_applicationDisconnected:")) {
+    if (!rpc_recv_applicationDisconnected(self, args)) {
+      return RPC_SUCCESS;
+    }
+  } else if (!strcmp(selector, "_rpc_applicationSentListing:")) {
+    if (!rpc_recv_applicationSentListing(self, args)) {
+      return RPC_SUCCESS;
+    }
+  } else if (!strcmp(selector, "_rpc_applicationSentData:")) {
+    if (!rpc_recv_applicationSentData(self, args)) {
+      return RPC_SUCCESS;
+    }
+  } else if (!strcmp(selector, "_rpc_applicationUpdated:")) {
+    if (!rpc_recv_applicationUpdated(self, args)) {
+      return RPC_SUCCESS;
+    }
+  } else if (!strcmp(selector, "_rpc_reportConnectedDriverList:") || !strcmp(selector, "_rpc_reportCurrentState:")) {
+    return RPC_SUCCESS;
+  }
+
+  // invalid msg
+  char *args_xml = NULL;
+  rpc_args_to_xml(self, args, &args_xml, true);
+  rpc_status ret = self->on_error(self, "Invalid message %s %s",
+      selector, args_xml);
+  free(args_xml);
+  return ret;
+}
+
+rpc_status rpc_recv_plist(rpc_t self, const plist_t rpc_dict) {
+  char *selector = NULL;
+  plist_get_string_val(plist_dict_get_item(rpc_dict, "__selector"), &selector);
+  plist_t args = plist_dict_get_item(rpc_dict, "__argument");
+  return rpc_recv_msg(self, selector, args);
+}
+
+//
+// STRUCTS
+//
