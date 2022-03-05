@@ -536,3 +536,91 @@ rpc_status rpc_recv_plist(rpc_t self, const plist_t rpc_dict) {
 //
 // STRUCTS
 //
+
+void rpc_free(rpc_t self) {
+  if (self) {
+    memset(self, 0, sizeof(struct rpc_struct));
+    free(self);
+  }
+}
+
+rpc_t rpc_new() {
+  rpc_t self = (rpc_t)malloc(sizeof(struct rpc_struct));
+  if (!self) {
+    return NULL;
+  }
+  memset(self, 0, sizeof(struct rpc_struct));
+  self->send_reportIdentifier = rpc_send_reportIdentifier;
+  self->send_getConnectedApplications = rpc_send_getConnectedApplications;
+  self->send_forwardGetListing = rpc_send_forwardGetListing;
+  self->send_forwardIndicateWebView = rpc_send_forwardIndicateWebView;
+  self->send_forwardSocketSetup = rpc_send_forwardSocketSetup;
+  self->send_forwardSocketData = rpc_send_forwardSocketData;
+  self->send_forwardDidClose = rpc_send_forwardDidClose;
+  self->recv_plist = rpc_recv_plist;
+  self->on_error = rpc_on_error;
+  return self;
+}
+
+rpc_app_t rpc_new_app() {
+  rpc_app_t app = (rpc_app_t)malloc(sizeof(struct rpc_app_struct));
+  if (app) {
+    memset(app, 0, sizeof(struct rpc_app_struct));
+  }
+  return app;
+}
+
+void rpc_free_app(rpc_app_t app) {
+  if (app) {
+    free(app->app_id);
+    free(app->app_name);
+    memset(app, 0, sizeof(struct rpc_app_struct));
+    free(app);
+  }
+}
+
+rpc_status rpc_copy_app(rpc_app_t app, rpc_app_t *to_app) {
+  rpc_app_t new_app = (to_app ? rpc_new_app() : NULL);
+  if (!new_app) {
+    return RPC_ERROR;
+  }
+
+  new_app->app_id = strdup(app->app_id);
+  new_app->app_name = strdup(app->app_name);
+  new_app->is_proxy = app->is_proxy;
+  *to_app = new_app;
+  return RPC_SUCCESS;
+}
+
+rpc_status rpc_parse_app(const plist_t node, rpc_app_t *to_app) {
+  rpc_app_t app = (to_app ? rpc_new_app() : NULL);
+  if (!app ||
+      rpc_dict_get_required_string(node, "WIRApplicationIdentifierKey",
+        &app->app_id) ||
+      rpc_dict_get_optional_string(node, "WIRApplicationNameKey",
+        &app->app_name) ||
+      rpc_dict_get_optional_bool(node, "WIRIsApplicationProxyKey",
+        &app->is_proxy)) {
+    rpc_free_app(app);
+    if (to_app) {
+      *to_app = NULL;
+    }
+    return RPC_ERROR;
+  }
+  *to_app = app;
+  return RPC_SUCCESS;
+}
+
+void rpc_free_apps(rpc_app_t *apps) {
+  if (apps) {
+    rpc_app_t *a = apps;
+    while (*a) {
+      rpc_free_app(*a++);
+    }
+    free(apps);
+  }
+}
+
+rpc_status rpc_parse_apps(const plist_t node, rpc_app_t **to_apps) {
+  if (!to_apps) {
+    return RPC_ERROR;
