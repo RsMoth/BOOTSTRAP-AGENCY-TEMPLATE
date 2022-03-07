@@ -719,3 +719,82 @@ rpc_status rpc_parse_pages(const plist_t node, rpc_page_t **to_pages) {
   plist_dict_iter iter = NULL;
   plist_dict_new_iter(node, &iter);
   int is_ok = (iter != NULL);
+  size_t i;
+  for (i = 0; i < length && is_ok; i++) {
+    char *key = NULL;
+    plist_t value = NULL;
+    plist_dict_next_item(node, iter, &key, &value);
+    rpc_page_t page = NULL;
+    is_ok = (key && !rpc_parse_page(value, &page) &&
+        page->page_id == strtol(key, NULL, 0));
+    pages[i] = page;
+    free(key);
+  }
+  free(iter);
+  if (!is_ok) {
+    rpc_free_pages(pages);
+    return RPC_ERROR;
+  }
+  *to_pages = pages;
+  return RPC_SUCCESS;
+}
+
+
+/*
+ */
+rpc_status rpc_args_to_xml(rpc_t self,
+    const void *args_obj, char **to_xml, bool should_trim) {
+  if (!args_obj || !to_xml) {
+    return RPC_ERROR;
+  }
+  *to_xml = NULL;
+  uint32_t length = 0;
+  plist_to_xml((plist_t)args_obj, to_xml, &length);
+  if (!*to_xml || !length) {
+    return self->on_error(self, "plist_to_xml failed");
+  }
+  if (should_trim) {
+    char *head = strstr(*to_xml, "<plist");
+    head = (head ? strchr(head, '>') : NULL);
+    if (head) {
+      while (*++head == '\n') {
+      }
+      char *tail = *to_xml + length;
+      while (tail > head && (!*tail || *tail == '\n')) {
+        tail--;
+      }
+      if (tail-head >= 8 && !strncmp(tail-7, "</plist>", 8)) {
+        tail -= 8;
+        char *new_xml = (char *)malloc((tail - head + 1) * sizeof(char));
+        strncpy(new_xml, head, tail - head);
+        new_xml[tail - head] = '\0';
+        free(*to_xml);
+        *to_xml = new_xml;
+      }
+    }
+  }
+  return RPC_SUCCESS;
+}
+
+
+rpc_status rpc_dict_get_required_string(const plist_t node, const char *key,
+    char **to_value) {
+  if (!node || !key || !to_value) {
+    return RPC_ERROR;
+  }
+  plist_t item = plist_dict_get_item(node, key);
+  if (plist_get_node_type(item) != PLIST_STRING) {
+    return RPC_ERROR;
+  }
+  plist_get_string_val(item, to_value);
+  return RPC_SUCCESS;
+}
+
+rpc_status rpc_dict_get_optional_string(const plist_t node, const char *key,
+    char **to_value) {
+  if (!node || !key || !to_value) {
+    return RPC_ERROR;
+  }
+  return (plist_dict_get_item(node, key) ?
+      rpc_dict_get_required_string(node, key, to_value) : RPC_SUCCESS);
+}
