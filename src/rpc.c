@@ -624,3 +624,98 @@ void rpc_free_apps(rpc_app_t *apps) {
 rpc_status rpc_parse_apps(const plist_t node, rpc_app_t **to_apps) {
   if (!to_apps) {
     return RPC_ERROR;
+  }
+  *to_apps = NULL;
+  if (plist_get_node_type(node) != PLIST_DICT) {
+    return RPC_ERROR;
+  }
+  size_t length = plist_dict_get_size(node);
+  rpc_app_t *apps = (rpc_app_t *)calloc(length + 1, sizeof(rpc_app_t));
+  if (!apps) {
+    return RPC_ERROR;
+  }
+  plist_dict_iter iter = NULL;
+  plist_dict_new_iter(node, &iter);
+  int8_t is_ok = (iter != NULL);
+  size_t i;
+  for (i = 0; i < length && is_ok; i++) {
+    char *key = NULL;
+    plist_t value = NULL;
+    plist_dict_next_item(node, iter, &key, &value);
+    rpc_app_t app = NULL;
+    is_ok = (key && !rpc_parse_app(value, &app) &&
+        !strcmp(key, app->app_id));
+    apps[i] = app;
+    free(key);
+  }
+  free(iter);
+  if (!is_ok) {
+    rpc_free_apps(apps);
+    return RPC_ERROR;
+  }
+  *to_apps = apps;
+  return RPC_SUCCESS;
+}
+
+rpc_page_t rpc_new_page() {
+  rpc_page_t page = (rpc_page_t)malloc(sizeof(struct rpc_page_struct));
+  if (page) {
+    memset(page, 0, sizeof(struct rpc_page_struct));
+  }
+  return page;
+}
+void rpc_free_page(rpc_page_t page) {
+  if (page) {
+    page->page_id = 0;
+    free(page->connection_id);
+    free(page->title);
+    free(page->url);
+    memset(page, 0, sizeof(struct rpc_page_struct));
+    free(page);
+  }
+}
+rpc_status rpc_parse_page(const plist_t node, rpc_page_t *to_page) {
+  rpc_page_t page = (to_page ? rpc_new_page() : NULL);
+  if (!page ||
+      rpc_dict_get_required_uint(node, "WIRPageIdentifierKey",
+        &page->page_id) ||
+      rpc_dict_get_optional_string(node, "WIRConnectionIdentifierKey",
+        &page->connection_id) ||
+      rpc_dict_get_optional_string(node, "WIRTitleKey",
+        &page->title) ||
+      rpc_dict_get_optional_string(node, "WIRURLKey",
+        &page->url)) {
+    rpc_free_page(page);
+    if (to_page) {
+      *to_page = NULL;
+    }
+    return RPC_ERROR;
+  }
+  *to_page = page;
+  return RPC_SUCCESS;
+}
+
+void rpc_free_pages(rpc_page_t *pages) {
+  if (pages) {
+    rpc_page_t *p = pages;
+    while (*p) {
+      rpc_free_page(*p++);
+    }
+    free(pages);
+  }
+}
+rpc_status rpc_parse_pages(const plist_t node, rpc_page_t **to_pages) {
+  if (!node || !to_pages ||
+      plist_get_node_type(node) != PLIST_DICT) {
+    return RPC_ERROR;
+  }
+
+  *to_pages = NULL;
+  size_t length = plist_dict_get_size(node);
+  rpc_page_t *pages = (rpc_page_t *)calloc(length + 1, sizeof(rpc_page_t));
+  if (!pages) {
+    return RPC_ERROR;
+  }
+  plist_dict_iter iter = NULL;
+  plist_dict_new_iter(node, &iter);
+  int is_ok = (iter != NULL);
