@@ -798,3 +798,68 @@ rpc_status rpc_dict_get_optional_string(const plist_t node, const char *key,
   return (plist_dict_get_item(node, key) ?
       rpc_dict_get_required_string(node, key, to_value) : RPC_SUCCESS);
 }
+
+rpc_status rpc_dict_get_required_bool(const plist_t node, const char *key,
+    bool *to_value) {
+  if (!node || !key || !to_value) {
+    return RPC_ERROR;
+  }
+  plist_t item = plist_dict_get_item(node, key);
+  if (plist_get_node_type(item) != PLIST_BOOLEAN) {
+    return RPC_ERROR;
+  }
+  uint8_t value = 0;
+  plist_get_bool_val(item, &value);
+  *to_value = (value ? true : false);
+  return RPC_SUCCESS;
+}
+
+rpc_status rpc_dict_get_optional_bool(const plist_t node, const char *key,
+    bool *to_value) {
+  if (!node || !key || !to_value) {
+    return RPC_ERROR;
+  }
+  return (plist_dict_get_item(node, key) ?
+      rpc_dict_get_required_bool(node, key, to_value) : RPC_SUCCESS);
+}
+
+rpc_status rpc_dict_get_required_uint(const plist_t node, const char *key,
+    uint32_t *to_value) {
+  if (!node || !key || !to_value) {
+    return RPC_ERROR;
+  }
+  plist_t item = plist_dict_get_item(node, key);
+  if (plist_get_node_type(item) != PLIST_UINT) {
+    return RPC_ERROR;
+  }
+  uint64_t value;
+  plist_get_uint_val(item, &value);
+  if (value > UINT32_MAX) {
+    return RPC_ERROR;
+  }
+  *to_value = (uint32_t)value;
+  return RPC_SUCCESS;
+}
+
+rpc_status rpc_dict_get_required_data(const plist_t node, const char *key,
+    char **to_value, size_t *to_length) {
+  if (!node || !key || !to_value || !to_length) {
+    return RPC_ERROR;
+  }
+  *to_value = NULL;
+  *to_length = 0;
+  plist_t item = plist_dict_get_item(node, key);
+  if (plist_get_node_type(item) != PLIST_DATA) {
+    return RPC_ERROR;
+  }
+  char *data = NULL;
+  uint64_t length = 0;
+  plist_get_data_val(item, &data, &length);
+  if (length > UINT32_MAX) {
+    free(data);
+    return RPC_ERROR;
+  }
+  *to_value = data;
+  *to_length = (size_t)length;
+  return RPC_SUCCESS;
+}
