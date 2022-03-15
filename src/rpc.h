@@ -83,3 +83,44 @@ struct rpc_struct {
 
     rpc_status (*send_forwardDidClose)(rpc_t self,
             const char *connection_id, const char *app_id,
+            uint32_t page_id, const char *sender_id);
+
+    void *state;
+
+    //
+    // Set these callbacks:
+    //
+
+    rpc_status (*send_plist)(rpc_t self, plist_t rpc_dict);
+
+    rpc_status (*on_reportSetup)(rpc_t self);
+
+    rpc_status (*on_reportConnectedApplicationList)(rpc_t self,
+            const rpc_app_t *apps);
+
+    rpc_status (*on_applicationConnected)(rpc_t self,
+            const rpc_app_t app);
+
+    rpc_status (*on_applicationDisconnected)(rpc_t self,
+            const rpc_app_t app);
+
+    rpc_status (*on_applicationSentListing)(rpc_t self,
+            const char *app_id, const rpc_page_t *pages);
+
+    rpc_status (*on_applicationSentData)(rpc_t self,
+            const char *app_id, const char *dest_id,
+            const char *data, size_t length);
+
+    rpc_status (*on_applicationUpdated)(rpc_t self,
+            const char *app_id, const char *dest_id);
+
+    // For internal use only:
+    rpc_status (*on_error)(rpc_t self, const char *format, ...);
+};
+
+
+#ifdef	__cplusplus
+}
+#endif
+
+#endif	/* RPC_H */
