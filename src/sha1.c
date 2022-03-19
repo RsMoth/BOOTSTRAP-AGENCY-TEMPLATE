@@ -39,3 +39,92 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
+//#include "polarssl/sha1.h"
+#include "sha1.h"
+// END CHANGES
+
+#if defined(POLARSSL_FS_IO) || defined(POLARSSL_SELF_TEST)
+#include <stdio.h>
+#endif
+
+/*
+ * 32-bit integer manipulation macros (big endian)
+ */
+#ifndef GET_UINT32_BE
+#define GET_UINT32_BE(n,b,i)                            \
+{                                                       \
+    (n) = ( (uint32_t) (b)[(i)    ] << 24 )             \
+        | ( (uint32_t) (b)[(i) + 1] << 16 )             \
+        | ( (uint32_t) (b)[(i) + 2] <<  8 )             \
+        | ( (uint32_t) (b)[(i) + 3]       );            \
+}
+#endif
+
+#ifndef PUT_UINT32_BE
+#define PUT_UINT32_BE(n,b,i)                            \
+{                                                       \
+    (b)[(i)    ] = (unsigned char) ( (n) >> 24 );       \
+    (b)[(i) + 1] = (unsigned char) ( (n) >> 16 );       \
+    (b)[(i) + 2] = (unsigned char) ( (n) >>  8 );       \
+    (b)[(i) + 3] = (unsigned char) ( (n)       );       \
+}
+#endif
+
+/*
+ * SHA-1 context setup
+ */
+void sha1_starts( sha1_context *ctx )
+{
+    ctx->total[0] = 0;
+    ctx->total[1] = 0;
+
+    ctx->state[0] = 0x67452301;
+    ctx->state[1] = 0xEFCDAB89;
+    ctx->state[2] = 0x98BADCFE;
+    ctx->state[3] = 0x10325476;
+    ctx->state[4] = 0xC3D2E1F0;
+}
+
+static void sha1_process( sha1_context *ctx, const unsigned char data[64] )
+{
+    uint32_t temp, W[16], A, B, C, D, E;
+
+    GET_UINT32_BE( W[ 0], data,  0 );
+    GET_UINT32_BE( W[ 1], data,  4 );
+    GET_UINT32_BE( W[ 2], data,  8 );
+    GET_UINT32_BE( W[ 3], data, 12 );
+    GET_UINT32_BE( W[ 4], data, 16 );
+    GET_UINT32_BE( W[ 5], data, 20 );
+    GET_UINT32_BE( W[ 6], data, 24 );
+    GET_UINT32_BE( W[ 7], data, 28 );
+    GET_UINT32_BE( W[ 8], data, 32 );
+    GET_UINT32_BE( W[ 9], data, 36 );
+    GET_UINT32_BE( W[10], data, 40 );
+    GET_UINT32_BE( W[11], data, 44 );
+    GET_UINT32_BE( W[12], data, 48 );
+    GET_UINT32_BE( W[13], data, 52 );
+    GET_UINT32_BE( W[14], data, 56 );
+    GET_UINT32_BE( W[15], data, 60 );
+
+#define S(x,n) ((x << n) | ((x & 0xFFFFFFFF) >> (32 - n)))
+
+#define R(t)                                            \
+(                                                       \
+    temp = W[(t -  3) & 0x0F] ^ W[(t - 8) & 0x0F] ^     \
+           W[(t - 14) & 0x0F] ^ W[ t      & 0x0F],      \
+    ( W[t & 0x0F] = S(temp,1) )                         \
+)
+
+#define P(a,b,c,d,e,x)                                  \
+{                                                       \
+    e += S(a,5) + F(b,c,d) + K + x; b = S(b,30);        \
+}
+
+    A = ctx->state[0];
+    B = ctx->state[1];
+    C = ctx->state[2];
+    D = ctx->state[3];
+    E = ctx->state[4];
+
+#define F(x,y,z) (z ^ (x & (y ^ z)))
