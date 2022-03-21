@@ -214,3 +214,101 @@ static void sha1_process( sha1_context *ctx, const unsigned char data[64] )
     P( A, B, C, D, E, R(60) );
     P( E, A, B, C, D, R(61) );
     P( D, E, A, B, C, R(62) );
+    P( C, D, E, A, B, R(63) );
+    P( B, C, D, E, A, R(64) );
+    P( A, B, C, D, E, R(65) );
+    P( E, A, B, C, D, R(66) );
+    P( D, E, A, B, C, R(67) );
+    P( C, D, E, A, B, R(68) );
+    P( B, C, D, E, A, R(69) );
+    P( A, B, C, D, E, R(70) );
+    P( E, A, B, C, D, R(71) );
+    P( D, E, A, B, C, R(72) );
+    P( C, D, E, A, B, R(73) );
+    P( B, C, D, E, A, R(74) );
+    P( A, B, C, D, E, R(75) );
+    P( E, A, B, C, D, R(76) );
+    P( D, E, A, B, C, R(77) );
+    P( C, D, E, A, B, R(78) );
+    P( B, C, D, E, A, R(79) );
+
+#undef K
+#undef F
+
+    ctx->state[0] += A;
+    ctx->state[1] += B;
+    ctx->state[2] += C;
+    ctx->state[3] += D;
+    ctx->state[4] += E;
+}
+
+/*
+ * SHA-1 process buffer
+ */
+void sha1_update( sha1_context *ctx, const unsigned char *input, size_t ilen )
+{
+    size_t fill;
+    uint32_t left;
+
+    if( ilen <= 0 )
+        return;
+
+    left = ctx->total[0] & 0x3F;
+    fill = 64 - left;
+
+    ctx->total[0] += (uint32_t) ilen;
+    ctx->total[0] &= 0xFFFFFFFF;
+
+    if( ctx->total[0] < (uint32_t) ilen )
+        ctx->total[1]++;
+
+    if( left && ilen >= fill )
+    {
+        memcpy( (void *) (ctx->buffer + left),
+                (void *) input, fill );
+        sha1_process( ctx, ctx->buffer );
+        input += fill;
+        ilen  -= fill;
+        left = 0;
+    }
+
+    while( ilen >= 64 )
+    {
+        sha1_process( ctx, input );
+        input += 64;
+        ilen  -= 64;
+    }
+
+    if( ilen > 0 )
+    {
+        memcpy( (void *) (ctx->buffer + left),
+                (void *) input, ilen );
+    }
+}
+
+static const unsigned char sha1_padding[64] =
+{
+ 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+/*
+ * SHA-1 final digest
+ */
+void sha1_finish( sha1_context *ctx, unsigned char output[20] )
+{
+    uint32_t last, padn;
+    uint32_t high, low;
+    unsigned char msglen[8];
+
+    high = ( ctx->total[0] >> 29 )
+         | ( ctx->total[1] <<  3 );
+    low  = ( ctx->total[0] <<  3 );
+
+    PUT_UINT32_BE( high, msglen, 0 );
+    PUT_UINT32_BE( low,  msglen, 4 );
+
+    last = ctx->total[0] & 0x3F;
+    padn = ( last < 56 ) ? ( 56 - last ) : ( 120 - last );
