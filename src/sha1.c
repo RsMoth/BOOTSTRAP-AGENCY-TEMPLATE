@@ -402,3 +402,76 @@ void sha1_hmac_starts( sha1_context *ctx, const unsigned char *key, size_t keyle
 }
 
 /*
+ * SHA-1 HMAC process buffer
+ */
+void sha1_hmac_update( sha1_context *ctx, const unsigned char *input, size_t ilen )
+{
+    sha1_update( ctx, input, ilen );
+}
+
+/*
+ * SHA-1 HMAC final digest
+ */
+void sha1_hmac_finish( sha1_context *ctx, unsigned char output[20] )
+{
+    unsigned char tmpbuf[20];
+
+    sha1_finish( ctx, tmpbuf );
+    sha1_starts( ctx );
+    sha1_update( ctx, ctx->opad, 64 );
+    sha1_update( ctx, tmpbuf, 20 );
+    sha1_finish( ctx, output );
+
+    memset( tmpbuf, 0, sizeof( tmpbuf ) );
+}
+
+/*
+ * SHA1 HMAC context reset
+ */
+void sha1_hmac_reset( sha1_context *ctx )
+{
+    sha1_starts( ctx );
+    sha1_update( ctx, ctx->ipad, 64 );
+}
+
+/*
+ * output = HMAC-SHA-1( hmac key, input buffer )
+ */
+void sha1_hmac( const unsigned char *key, size_t keylen,
+                const unsigned char *input, size_t ilen,
+                unsigned char output[20] )
+{
+    sha1_context ctx;
+
+    sha1_hmac_starts( &ctx, key, keylen );
+    sha1_hmac_update( &ctx, input, ilen );
+    sha1_hmac_finish( &ctx, output );
+
+    memset( &ctx, 0, sizeof( sha1_context ) );
+}
+
+#if defined(POLARSSL_SELF_TEST)
+/*
+ * FIPS-180-1 test vectors
+ */
+static unsigned char sha1_test_buf[3][57] = 
+{
+    { "abc" },
+    { "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq" },
+    { "" }
+};
+
+static const int sha1_test_buflen[3] =
+{
+    3, 56, 1000
+};
+
+static const unsigned char sha1_test_sum[3][20] =
+{
+    { 0xA9, 0x99, 0x3E, 0x36, 0x47, 0x06, 0x81, 0x6A, 0xBA, 0x3E,
+      0x25, 0x71, 0x78, 0x50, 0xC2, 0x6C, 0x9C, 0xD0, 0xD8, 0x9D },
+    { 0x84, 0x98, 0x3E, 0x44, 0x1C, 0x3B, 0xD2, 0x6E, 0xBA, 0xAE,
+      0x4A, 0xA1, 0xF9, 0x51, 0x29, 0xE5, 0xE5, 0x46, 0x70, 0xF1 },
+    { 0x34, 0xAA, 0x97, 0x3C, 0xD4, 0xC4, 0xDA, 0xA4, 0xF6, 0x1E,
+      0xEB, 0x2B, 0xDB, 0xAD, 0x27, 0x31, 0x65, 0x34, 0x01, 0x6F }
+};
