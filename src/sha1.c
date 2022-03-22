@@ -312,3 +312,93 @@ void sha1_finish( sha1_context *ctx, unsigned char output[20] )
 
     last = ctx->total[0] & 0x3F;
     padn = ( last < 56 ) ? ( 56 - last ) : ( 120 - last );
+
+    sha1_update( ctx, (unsigned char *) sha1_padding, padn );
+    sha1_update( ctx, msglen, 8 );
+
+    PUT_UINT32_BE( ctx->state[0], output,  0 );
+    PUT_UINT32_BE( ctx->state[1], output,  4 );
+    PUT_UINT32_BE( ctx->state[2], output,  8 );
+    PUT_UINT32_BE( ctx->state[3], output, 12 );
+    PUT_UINT32_BE( ctx->state[4], output, 16 );
+}
+
+/*
+ * output = SHA-1( input buffer )
+ */
+void sha1( const unsigned char *input, size_t ilen, unsigned char output[20] )
+{
+    sha1_context ctx;
+
+    sha1_starts( &ctx );
+    sha1_update( &ctx, input, ilen );
+    sha1_finish( &ctx, output );
+
+    memset( &ctx, 0, sizeof( sha1_context ) );
+}
+
+#if defined(POLARSSL_FS_IO)
+/*
+ * output = SHA-1( file contents )
+ */
+int sha1_file( const char *path, unsigned char output[20] )
+{
+    FILE *f;
+    size_t n;
+    sha1_context ctx;
+    unsigned char buf[1024];
+
+    if( ( f = fopen( path, "rb" ) ) == NULL )
+        return( POLARSSL_ERR_SHA1_FILE_IO_ERROR );
+
+    sha1_starts( &ctx );
+
+    while( ( n = fread( buf, 1, sizeof( buf ), f ) ) > 0 )
+        sha1_update( &ctx, buf, n );
+
+    sha1_finish( &ctx, output );
+
+    memset( &ctx, 0, sizeof( sha1_context ) );
+
+    if( ferror( f ) != 0 )
+    {
+        fclose( f );
+        return( POLARSSL_ERR_SHA1_FILE_IO_ERROR );
+    }
+
+    fclose( f );
+    return( 0 );
+}
+#endif /* POLARSSL_FS_IO */
+
+/*
+ * SHA-1 HMAC context setup
+ */
+void sha1_hmac_starts( sha1_context *ctx, const unsigned char *key, size_t keylen )
+{
+    size_t i;
+    unsigned char sum[20];
+
+    if( keylen > 64 )
+    {
+        sha1( key, keylen, sum );
+        keylen = 20;
+        key = sum;
+    }
+
+    memset( ctx->ipad, 0x36, 64 );
+    memset( ctx->opad, 0x5C, 64 );
+
+    for( i = 0; i < keylen; i++ )
+    {
+        ctx->ipad[i] = (unsigned char)( ctx->ipad[i] ^ key[i] );
+        ctx->opad[i] = (unsigned char)( ctx->opad[i] ^ key[i] );
+    }
+
+    sha1_starts( ctx );
+    sha1_update( ctx, ctx->ipad, 64 );
+
+    memset( sum, 0, sizeof( sum ) );
+}
+
+/*
