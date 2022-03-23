@@ -574,3 +574,61 @@ int sha1_self_test( int verbose )
                                sha1_test_buflen[i] );
 
         sha1_finish( &ctx, sha1sum );
+
+        if( memcmp( sha1sum, sha1_test_sum[i], 20 ) != 0 )
+        {
+            if( verbose != 0 )
+                printf( "failed\n" );
+
+            return( 1 );
+        }
+
+        if( verbose != 0 )
+            printf( "passed\n" );
+    }
+
+    if( verbose != 0 )
+        printf( "\n" );
+
+    for( i = 0; i < 7; i++ )
+    {
+        if( verbose != 0 )
+            printf( "  HMAC-SHA-1 test #%d: ", i + 1 );
+
+        if( i == 5 || i == 6 )
+        {
+            memset( buf, '\xAA', buflen = 80 );
+            sha1_hmac_starts( &ctx, buf, buflen );
+        }
+        else
+            sha1_hmac_starts( &ctx, sha1_hmac_test_key[i],
+                                    sha1_hmac_test_keylen[i] );
+
+        sha1_hmac_update( &ctx, sha1_hmac_test_buf[i],
+                                sha1_hmac_test_buflen[i] );
+
+        sha1_hmac_finish( &ctx, sha1sum );
+
+        buflen = ( i == 4 ) ? 12 : 20;
+
+        if( memcmp( sha1sum, sha1_hmac_test_sum[i], buflen ) != 0 )
+        {
+            if( verbose != 0 )
+                printf( "failed\n" );
+
+            return( 1 );
+        }
+
+        if( verbose != 0 )
+            printf( "passed\n" );
+    }
+
+    if( verbose != 0 )
+        printf( "\n" );
+
+    return( 0 );
+}
+
+#endif
+
+#endif
