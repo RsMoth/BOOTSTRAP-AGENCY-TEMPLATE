@@ -162,3 +162,83 @@ int sm_connect_unix(const char *filename) {
     close(sfd);
     perror("connect failed");
     return -1;
+  }
+
+  return sfd;
+}
+#endif
+
+int sm_connect_tcp(const char *hostname, int port) {
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = PF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_protocol = IPPROTO_TCP;
+  struct addrinfo *res0;
+  char *port_str = NULL;
+  if (asprintf(&port_str, "%d", port) < 0) {
+    return -1;  // asprintf failed
+  }
+  int ret = getaddrinfo(hostname, port_str, &hints, &res0);
+  free(port_str);
+  if (ret) {
+    perror("Unknown host");
+    return (ret < 0 ? ret : -1);
+  }
+  ret = -1;
+  int fd = 0;
+  struct addrinfo *res;
+  for (res = res0; res; res = res->ai_next) {
+#ifdef WIN32
+    if (fd != INVALID_SOCKET) {
+      closesocket(fd);
+    }
+    fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    if (fd == INVALID_SOCKET) {
+      continue;
+    }
+    u_long nb = 1;
+    if (ioctlsocket(fd, FIONBIO, &nb) ||
+        (connect(fd, res->ai_addr, res->ai_addrlen) == SOCKET_ERROR &&
+         WSAGetLastError() != WSAEWOULDBLOCK &&
+         WSAGetLastError() != WSAEINPROGRESS)) {
+      continue;
+    }
+
+    struct timeval to;
+    to.tv_sec = 0;
+    to.tv_usec= 500*1000;
+    fd_set write_fds;
+    FD_ZERO(&write_fds);
+    FD_SET(fd, &write_fds);
+
+    if (select(1, NULL, &write_fds, NULL, &to) < 1) {
+      continue;
+    }
+#else
+    if (fd > 0) {
+      close(fd);
+    }
+    fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    if (fd < 0) {
+      continue;
+    }
+    // try non-blocking connect, usually succeeds even if unreachable
+    int opts = fcntl(fd, F_GETFL);
+    if (opts < 0 ||
+        fcntl(fd, F_SETFL, (opts | O_NONBLOCK)) < 0 ||
+        ((connect(fd, res->ai_addr, res->ai_addrlen) < 0) ==
+         (errno != EINPROGRESS))) {
+      continue;
+    }
+    // try blocking select to verify its reachable
+    struct timeval to;
+    to.tv_sec = 0;
+    to.tv_usec= 500*1000; // arbitrary
+    fd_set error_fds;
+    FD_ZERO(&error_fds);
+    FD_SET(fd, &error_fds);
+    if (fcntl(fd, F_SETFL, opts) < 0) {
+      continue;
+    }
+    int is_error = select(fd + 1, &error_fds, NULL, NULL, &to);
