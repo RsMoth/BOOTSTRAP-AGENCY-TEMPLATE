@@ -242,3 +242,98 @@ int sm_connect_tcp(const char *hostname, int port) {
       continue;
     }
     int is_error = select(fd + 1, &error_fds, NULL, NULL, &to);
+    if (is_error) {
+      continue;
+    }
+    // success!  set back to non-blocking and return
+    if (fcntl(fd, F_SETFL, (opts | O_NONBLOCK)) < 0) {
+      continue;
+    }
+#endif
+    ret = fd;
+    break;
+  }
+#ifdef WIN32
+  if (fd != INVALID_SOCKET && ret <= 0) {
+    closesocket(fd);
+  }
+#else
+  if (fd > 0 && ret <= 0) {
+    close(fd);
+  }
+#endif
+  freeaddrinfo(res0);
+  return ret;
+}
+
+int sm_connect(const char *socket_addr) {
+  if (strncmp(socket_addr, "unix:", 5) == 0) {
+#ifdef WIN32
+    return -1;
+#else
+    return sm_connect_unix(socket_addr + 5);
+#endif
+  } else {
+    const char *s_port = strrchr(socket_addr, ':');
+    int port = 0;
+
+    if (s_port) {
+      port = strtol(s_port + 1, NULL, 0);
+    }
+
+    if (port <= 0) {
+      return -1;
+    }
+
+    size_t host_len = s_port - socket_addr;
+    char *host = strndup(socket_addr, host_len);
+
+    int ret = sm_connect_tcp(host, port);
+    free(host);
+    return ret;
+  }
+}
+
+
+sm_status sm_on_debug(sm_t self, const char *format, ...) {
+  if (self->is_debug && *self->is_debug) {
+    va_list args;
+    va_start(args, format);
+    vfprintf(stdout, format, args);
+    fprintf(stdout, "\n");
+    va_end(args);
+  }
+  return SM_SUCCESS;
+}
+
+sm_status sm_add_fd(sm_t self, int fd, void *ssl_session, void *value,
+    bool is_server) {
+  sm_private_t my = self->private_state;
+  if (FD_ISSET(fd, my->all_fds)) {
+    return SM_ERROR;
+  }
+  if (ht_put(my->fd_to_value, HT_KEY(fd), value)) {
+    // The above FD_ISSET(..master..) should prevent this
+    return SM_ERROR;
+  }
+  if (ssl_session != NULL && ht_put(my->fd_to_ssl, HT_KEY(fd), ssl_session)) {
+    return SM_ERROR;
+  }
+  // is_server == getsockopt(..., SO_ACCEPTCONN, ...)?
+  sm_on_debug(self, "ss.add%s_fd(%d)", (is_server ? "_server" : ""), fd);
+  FD_SET(fd, my->all_fds);
+  FD_CLR(fd, my->send_fds); // only set if blocked
+  FD_SET(fd, my->recv_fds);
+  FD_CLR(fd, my->tmp_send_fds);
+  FD_CLR(fd, my->tmp_recv_fds);
+  FD_CLR(fd, my->tmp_fail_fds);
+  if (is_server) {
+    FD_SET(fd, my->server_fds);
+  }
+  if (fd > my->max_fd) {
+    my->max_fd = fd;
+  }
+  return SM_SUCCESS;
+}
+
+sm_status sm_remove_fd(sm_t self, int fd) {
