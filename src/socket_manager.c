@@ -513,3 +513,100 @@ void sm_resend(sm_t self, int fd) {
           if (sent_bytes && errno != EWOULDBLOCK) {
             perror("sendq retry failed");
 #endif
+            self->remove_fd(self, fd);
+            return;
+          }
+          break;
+        }
+      } else {
+        sent_bytes = SSL_write((SSL *)ssl_session, (void*)head, tail - head);
+        if (sent_bytes <= 0) {
+          if (SSL_get_error(ssl_session, sent_bytes) != SSL_ERROR_WANT_READ &&
+              SSL_get_error(ssl_session, sent_bytes) != SSL_ERROR_WANT_WRITE) {
+            perror("ssl sendq retry failed");
+            self->remove_fd(self, fd);
+            return;
+          }
+          break;
+        }
+      }
+      head += sent_bytes;
+    }
+    sendq->head = head;
+    if (head < tail) {
+      // still have stuff to send
+      sm_on_debug(self, "ss.sendq<%p> defer len=%zd", sendq, (tail - head));
+      break;
+    }
+    self->on_sent(self, fd, sendq->value, sendq->begin, tail - sendq->begin);
+    sm_sendq_t nextq = sendq->next;
+    ht_put(my->fd_to_sendq, HT_KEY(fd), nextq);
+    if (!nextq) {
+      FD_CLR(fd, my->send_fds);
+    }
+    int recv_fd = sendq->recv_fd;
+    if (recv_fd && FD_ISSET(recv_fd, my->all_fds)) {
+      // if no other sendq's match this blocked recv_fd, re-enable it
+      bool found = false;
+      if (ht_size(my->fd_to_sendq)) {
+        sm_sendq_t *qs = (sm_sendq_t *)ht_values(my->fd_to_sendq);
+        sm_sendq_t *q;
+        for (q = qs; *q && !found; q++) {
+          sm_sendq_t sq;
+          for (sq = *q; sq && !found; sq = sq->next) {
+            found |= (sq->recv_fd == recv_fd);
+          }
+        }
+        free(qs);
+      }
+      if (!found) {
+        sm_on_debug(self, "ss.sendq<%p> re-enable recv_fd=%d", sendq, recv_fd);
+        FD_SET(recv_fd, my->recv_fds);
+        // don't FD_SET(tmp_recv_fds), since maybe there was no input
+        // instead, let the next select loop pick it up
+      }
+    }
+    sm_on_debug(self, "ss.sendq<%p> free, next=<%p>", sendq, nextq);
+    sm_sendq_free(sendq);
+    sendq = nextq;
+  }
+}
+
+void sm_recv(sm_t self, int fd) {
+  sm_private_t my = self->private_state;
+  my->curr_recv_fd = fd;
+  void *ssl_session = ht_get_value(my->fd_to_ssl, HT_KEY(fd));
+  while (1) {
+    ssize_t read_bytes;
+    if (ssl_session == NULL) {
+      read_bytes = recv(fd, my->tmp_buf, my->tmp_buf_length, RECV_FLAGS);
+      if (read_bytes < 0) {
+#ifdef WIN32
+        if (WSAGetLastError() != WSAEWOULDBLOCK) {
+          fprintf(stderr, "recv failed with error %d\n", WSAGetLastError());
+#else
+        if (errno != EWOULDBLOCK) {
+          perror("recv failed");
+#endif
+          self->remove_fd(self, fd);
+        }
+        break;
+      }
+    } else {
+      read_bytes = SSL_read((SSL *)ssl_session, my->tmp_buf, my->tmp_buf_length);
+      if (read_bytes <= 0) {
+        if (SSL_get_error(ssl_session, read_bytes) != SSL_ERROR_WANT_READ &&
+            SSL_get_error(ssl_session, read_bytes) != SSL_ERROR_WANT_WRITE) {
+          perror("ssl recv failed");
+          self->remove_fd(self, fd);
+        }
+        break;
+      }
+    }
+    sm_on_debug(self, "ss.recv fd=%d len=%zd", fd, read_bytes);
+    void *value = ht_get_value(my->fd_to_value, HT_KEY(fd));
+    if (read_bytes == 0 ||
+        self->on_recv(self, fd, value, my->tmp_buf, read_bytes)) {
+      self->remove_fd(self, fd);
+      break;
+    }
