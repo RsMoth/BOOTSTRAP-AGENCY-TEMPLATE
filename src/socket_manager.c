@@ -423,3 +423,93 @@ sm_status sm_send(sm_t self, int fd, const char *data, size_t length,
       head += sent_bytes;
       if (head >= tail) {
         self->on_sent(self, fd, value, data, length);
+        return SM_SUCCESS; // this is the typical case
+      }
+    }
+  }
+  // we can't send this now, so queue it
+  int curr_recv_fd = my->curr_recv_fd;
+  sm_sendq_t newq = sm_sendq_new(curr_recv_fd, value, head, tail - head);
+  if (sendq) {
+    while (sendq->next) {
+      sendq = sendq->next;
+    }
+    sendq->next = newq;
+  } else {
+    ht_put(my->fd_to_sendq, HT_KEY(fd), newq);
+    FD_SET(fd, my->send_fds);
+  }
+  sm_on_debug(self, "ss.sendq<%p> new fd=%d recv_fd=%d length=%zd"
+      ", prev=<%p>", newq, fd, curr_recv_fd, tail - head, sendq);
+  if (curr_recv_fd && FD_ISSET(curr_recv_fd, my->recv_fds)) {
+    // block the current recv_fd, to prevent our sendq from growing too large.
+    // At worst our recv_fds are all trying to send to the same fd, in which
+    // case we'll eventually block all of them until the first blocked send
+    // succeeds.
+    sm_on_debug(self, "ss.sendq<%p> disable recv_fd=%d", newq, curr_recv_fd);
+    FD_CLR(curr_recv_fd, my->recv_fds);
+    FD_CLR(curr_recv_fd, my->tmp_recv_fds);
+  }
+  return SM_SUCCESS;
+}
+
+void sm_accept(sm_t self, int fd) {
+  sm_private_t my = self->private_state;
+  while (1) {
+    int new_fd = accept(fd, NULL, NULL);
+    if (new_fd < 0) {
+#ifdef WIN32
+      if (WSAGetLastError() != WSAEWOULDBLOCK) {
+#else
+      if (errno != EWOULDBLOCK) {
+#endif
+        perror("accept failed");
+        self->remove_fd(self, fd);
+        return;
+      }
+      break;
+    }
+    sm_on_debug(self, "ss.accept server=%d new_client=%d",
+        fd, new_fd);
+    void *value = ht_get_value(my->fd_to_value, HT_KEY(fd));
+    void *new_value = NULL;
+    if (self->on_accept(self, fd, value, new_fd, &new_value)) {
+#ifdef WIN32
+     closesocket(new_fd);
+#else
+     close(new_fd);
+#endif
+    } else if (self->add_fd(self, new_fd, NULL, new_value, false)) {
+      self->on_close(self, new_fd, new_value, false);
+#ifdef WIN32
+     closesocket(new_fd);
+#else
+     close(new_fd);
+#endif
+    }
+  }
+}
+
+void sm_resend(sm_t self, int fd) {
+  sm_private_t my = self->private_state;
+  sm_sendq_t sendq = ht_get_value(my->fd_to_sendq, HT_KEY(fd));
+  void *ssl_session = ht_get_value(my->fd_to_ssl, HT_KEY(fd));
+  while (sendq) {
+    char *head = sendq->head;
+    char *tail = sendq->tail;
+    // send as much as we can without blocking
+    sm_on_debug(self, "ss.sendq<%p> resume send to fd=%d len=%zd", sendq, fd,
+        (tail - head));
+    while (head < tail) {
+      ssize_t sent_bytes;
+      if (ssl_session == NULL) {
+        sent_bytes = send(fd, (void*)head, (tail - head), 0);
+        if (sent_bytes <= 0) {
+#ifdef WIN32
+          if (sent_bytes && WSAGetLastError() != WSAEWOULDBLOCK) {
+            fprintf(stderr, "sendq retry failed with error: %d\n",
+                WSAGetLastError());
+#else
+          if (sent_bytes && errno != EWOULDBLOCK) {
+            perror("sendq retry failed");
+#endif
