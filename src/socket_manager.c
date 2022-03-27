@@ -337,3 +337,89 @@ sm_status sm_add_fd(sm_t self, int fd, void *ssl_session, void *value,
 }
 
 sm_status sm_remove_fd(sm_t self, int fd) {
+  sm_private_t my = self->private_state;
+  if (!FD_ISSET(fd, my->all_fds)) {
+    return SM_ERROR;
+  }
+  ht_put(my->fd_to_ssl, HT_KEY(fd), NULL);
+  void *value = ht_put(my->fd_to_value, HT_KEY(fd), NULL);
+  bool is_server = FD_ISSET(fd, my->server_fds);
+  sm_on_debug(self, "ss.remove%s_fd(%d)", (is_server ? "_server" : ""), fd);
+  sm_status ret = self->on_close(self, fd, value, is_server);
+#ifdef WIN32
+  closesocket(fd);
+#else
+  close(fd);
+#endif
+  FD_CLR(fd, my->all_fds);
+  if (is_server) {
+    FD_CLR(fd, my->server_fds);
+  }
+  FD_CLR(fd, my->send_fds);
+  FD_CLR(fd, my->recv_fds);
+  FD_CLR(fd, my->tmp_send_fds);
+  FD_CLR(fd, my->tmp_recv_fds);
+  FD_CLR(fd, my->tmp_fail_fds);
+  if (fd == my->max_fd) {
+    while (my->max_fd >= 0 && !FD_ISSET(my->max_fd, my->all_fds)) {
+      my->max_fd--;
+    }
+  }
+  if (ht_size(my->fd_to_sendq)) {
+    sm_sendq_t *qs = (sm_sendq_t *)ht_values(my->fd_to_sendq);
+    sm_sendq_t *q;
+    for (q = qs; *q; q++) {
+      sm_sendq_t sendq = *q;
+      while (sendq) {
+        if (sendq->recv_fd == fd) {
+          sendq->recv_fd = 0;
+          // don't abort this blocked send, even though the "cause" has ended
+        }
+        sendq = sendq->next;
+      }
+    }
+    free(qs);
+  }
+  return ret;
+}
+
+sm_status sm_send(sm_t self, int fd, const char *data, size_t length,
+    void* value) {
+  sm_private_t my = self->private_state;
+  sm_sendq_t sendq = (sm_sendq_t)ht_get_value(my->fd_to_sendq, HT_KEY(fd));
+  const char *head = data;
+  const char *tail = data + length;
+  if (!sendq) {
+    void *ssl_session = ht_get_value(my->fd_to_ssl, HT_KEY(fd));
+    // send as much as we can without blocking
+    while (1) {
+      ssize_t sent_bytes;
+      if (ssl_session == NULL) {
+        sent_bytes = send(fd, (void*)head, (tail - head), 0);
+        if (sent_bytes <= 0) {
+#ifdef WIN32
+          if (sent_bytes && WSAGetLastError() != WSAEWOULDBLOCK) {
+#else
+          if (sent_bytes && errno != EWOULDBLOCK) {
+#endif
+            sm_on_debug(self, "ss.failed fd=%d", fd);
+            perror("send failed");
+            return SM_ERROR;
+          }
+          break;
+        }
+      } else {
+        sent_bytes = SSL_write((SSL *)ssl_session, (void*)head, tail - head);
+        if (sent_bytes <= 0) {
+          if (SSL_get_error(ssl_session, sent_bytes) != SSL_ERROR_WANT_READ &&
+              SSL_get_error(ssl_session, sent_bytes) != SSL_ERROR_WANT_WRITE) {
+            sm_on_debug(self, "ss.failed fd=%d", fd);
+            perror("ssl send failed");
+            return SM_ERROR;
+          }
+          break;
+        }
+      }
+      head += sent_bytes;
+      if (head >= tail) {
+        self->on_sent(self, fd, value, data, length);
