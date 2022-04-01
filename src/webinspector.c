@@ -6,4 +6,8 @@
 #endif
 
 #define _GNU_SOURCE
+#include <errno.h>
+#include <getopt.h>
+#include <math.h>
+#include <signal.h>
 #include 
