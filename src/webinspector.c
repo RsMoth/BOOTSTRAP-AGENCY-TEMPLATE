@@ -15,4 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#ifdef WIN
+#ifdef WIN32
+#include <winsock2.h>
+#else
+#include <sys/fcntl.h>
+#include <sys/socket.h>
