@@ -25,4 +25,8 @@
 
 #include <openssl/ssl.h>
 
-#include <libimobiledevice/installation_proxy
+#include <libimobiledevice/installation_proxy.h>
+#include <libimobiledevice/libimobiledevice.h>
+#include <libimobiledevice/lockdown.h>
+
+#include "
