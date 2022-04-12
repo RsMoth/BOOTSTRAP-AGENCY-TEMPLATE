@@ -20,3 +20,9 @@
 #else
 #include <sys/fcntl.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
+#endif
+
+#include <openssl/ssl.h>
+
+#include <libimobiledevice/installation_proxy
