@@ -29,4 +29,10 @@
 #include <libimobiledevice/libimobiledevice.h>
 #include <libimobiledevice/lockdown.h>
 
-#include "
+#include "char_buffer.h"
+#include "webinspector.h"
+
+
+#define WI_DEBUG 1
+
+// TODO figure out exa
