@@ -38,4 +38,8 @@
 // TODO figure out exact value
 #define MAX_RPC_LEN 8096 - 500
 
-// some arbitrarly limit, to catch 
+// some arbitrarly limit, to catch bad packets
+#define MAX_BODY_LENGTH 1<<26
+
+struct wi_private {
+  bool partials_sup
