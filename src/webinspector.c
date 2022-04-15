@@ -35,4 +35,7 @@
 
 #define WI_DEBUG 1
 
-// TODO figure out exa
+// TODO figure out exact value
+#define MAX_RPC_LEN 8096 - 500
+
+// some arbitrarly limit, to catch 
