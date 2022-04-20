@@ -42,4 +42,15 @@
 #define MAX_BODY_LENGTH 1<<26
 
 struct wi_private {
-  bool partials_sup
+  bool partials_supported;
+  cb_t in;
+  cb_t partial;
+  bool has_length;
+  size_t body_length;
+};
+
+//
+// CONNECT
+//
+
+/
