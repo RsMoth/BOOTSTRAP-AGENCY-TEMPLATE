@@ -53,4 +53,6 @@ struct wi_private {
 // CONNECT
 //
 
-/
+// based on latest libimobiledevice/src/idevice.h
+struct idevice_connection_private {
+  idevi
