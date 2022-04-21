@@ -55,4 +55,8 @@ struct wi_private {
 
 // based on latest libimobiledevice/src/idevice.h
 struct idevice_connection_private {
-  idevi
+  idevice_t device;
+  enum idevice_connection_type type;
+  void *data;
+  void *ssl_data;
+};
