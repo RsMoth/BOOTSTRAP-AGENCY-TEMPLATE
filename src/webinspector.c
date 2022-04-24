@@ -60,3 +60,9 @@ struct idevice_connection_private {
   void *data;
   void *ssl_data;
 };
+
+struct ssl_data_private {
+	SSL *session;
+	SSL_CTX *ctx;
+};
+typedef struc
