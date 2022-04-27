@@ -65,4 +65,6 @@ struct ssl_data_private {
 	SSL *session;
 	SSL_CTX *ctx;
 };
-typedef struc
+typedef struct ssl_data_private *ssl_data_t;
+
+wi_status idevice_connection_get_ssl_session
