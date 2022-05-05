@@ -67,4 +67,6 @@ struct ssl_data_private {
 };
 typedef struct ssl_data_private *ssl_data_t;
 
-wi_status idevice_connection_get_ssl_session
+wi_status idevice_connection_get_ssl_session(idevice_connection_t connection,
+    SSL **to_session) {
+  if (!connection || !to_session)
