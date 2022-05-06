@@ -75,4 +75,7 @@ wi_status idevice_connection_get_ssl_session(idevice_connection_t connection,
 
   idevice_connection_private *c = (
       (sizeof(*connection) == sizeof(idevice_connection_private)) ?
-      (idevice_connection_private *) connection : NU
+      (idevice_connection_private *) connection : NULL);
+
+  if (!c || c->data <= 0) {
+    perror("Invalid idevice_connection struct. Please verify that 
