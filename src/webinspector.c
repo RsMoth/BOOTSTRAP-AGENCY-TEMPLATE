@@ -74,4 +74,5 @@ wi_status idevice_connection_get_ssl_session(idevice_connection_t connection,
   }
 
   idevice_connection_private *c = (
-      (sizeof(*con
+      (sizeof(*connection) == sizeof(idevice_connection_private)) ?
+      (idevice_connection_private *) connection : NU
