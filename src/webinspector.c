@@ -78,4 +78,6 @@ wi_status idevice_connection_get_ssl_session(idevice_connection_t connection,
       (idevice_connection_private *) connection : NULL);
 
   if (!c || c->data <= 0) {
-    perror("Invalid idevice_connection struct. Please verify that 
+    perror("Invalid idevice_connection struct. Please verify that "
+        __FILE__ "'s idevice_connection_private matches your version of"
+        " libimbil
