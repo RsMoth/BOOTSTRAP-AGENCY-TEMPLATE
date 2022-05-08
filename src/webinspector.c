@@ -87,4 +87,6 @@ wi_status idevice_connection_get_ssl_session(idevice_connection_t connection,
   ssl_data_t sd = (ssl_data_t)c->ssl_data;
   if (!sd || !sd->session) {
     perror("Invalid ssl_data struct. Make sure libimobiledevice was compiled"
-        " with openssl. Otherwise please ve
+        " with openssl. Otherwise please verify that " __FILE__ "'s ssl_data"
+        " matches your version of libimbiledevice/src/idevice.h");
+    
