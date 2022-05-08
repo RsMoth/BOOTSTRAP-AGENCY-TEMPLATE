@@ -84,4 +84,6 @@ wi_status idevice_connection_get_ssl_session(idevice_connection_t connection,
     return WI_ERROR;
   }
 
-  ssl_data_t sd = (ssl_data_t)c->
+  ssl_data_t sd = (ssl_data_t)c->ssl_data;
+  if (!sd || !sd->session) {
+    perror("Invalid ssl_data struct. Make sure l
