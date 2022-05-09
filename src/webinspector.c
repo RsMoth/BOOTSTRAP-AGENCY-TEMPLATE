@@ -98,4 +98,7 @@ wi_status idevice_connection_get_ssl_session(idevice_connection_t connection,
 
 int wi_connect(const char *device_id, char **to_device_id,
     char **to_device_name, int *to_device_os_version,
-    vo
+    void **to_ssl_session, int recv_timeout) {
+  int ret = -1;
+
+  idevice_t phone = N
