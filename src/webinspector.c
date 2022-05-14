@@ -101,4 +101,7 @@ int wi_connect(const char *device_id, char **to_device_id,
     void **to_ssl_session, int recv_timeout) {
   int ret = -1;
 
-  idevice_t phone = N
+  idevice_t phone = NULL;
+  plist_t node = NULL;
+  lockdownd_service_descriptor_t service = NULL;
+  lock
