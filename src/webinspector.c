@@ -104,4 +104,6 @@ int wi_connect(const char *device_id, char **to_device_id,
   idevice_t phone = NULL;
   plist_t node = NULL;
   lockdownd_service_descriptor_t service = NULL;
-  lock
+  lockdownd_client_t client = NULL;
+  idevice_connection_t connection = NULL;
+  int fd = 
