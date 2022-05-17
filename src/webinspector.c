@@ -106,4 +106,8 @@ int wi_connect(const char *device_id, char **to_device_id,
   lockdownd_service_descriptor_t service = NULL;
   lockdownd_client_t client = NULL;
   idevice_connection_t connection = NULL;
-  int fd = 
+  int fd = -1;
+  SSL *ssl_session = NULL;
+
+  // get phone
+  if (idevice_new_with_options(&phone, device_i
