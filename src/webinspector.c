@@ -111,4 +111,8 @@ int wi_connect(const char *device_id, char **to_device_id,
 
   // get phone
   if (idevice_new_with_options(&phone, device_id, IDEVICE_LOOKUP_USBMUX | IDEVICE_LOOKUP_NETWORK)) {
-    fprintf(stderr, "No device fo
+    fprintf(stderr, "No device found, is it plugged in?\n");
+    goto leave_cleanup;
+  }
+
+  // connect to l
