@@ -115,4 +115,6 @@ int wi_connect(const char *device_id, char **to_device_id,
     goto leave_cleanup;
   }
 
-  // connect to l
+  // connect to lockdownd
+  lockdownd_error_t ldret;
+  if (LOCKDOWN_E_SUCCESS != (ldret = lockdownd_client_n
