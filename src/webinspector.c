@@ -137,4 +137,6 @@ int wi_connect(const char *device_id, char **to_device_id,
     node = NULL;
   }
   if (to_device_os_version &&
-      !lockdownd_get_value(client, NULL, "P
+      !lockdownd_get_value(client, NULL, "ProductVersion", &node)) {
+    int vers[3] = {0, 0, 0};
+    char *s_version = N
