@@ -143,4 +143,6 @@ int wi_connect(const char *device_id, char **to_device_id,
     plist_get_string_val(node, &s_version);
     if (s_version && sscanf(s_version, "%d.%d.%d",
           &vers[0], &vers[1], &vers[2]) >= 2) {
-      *to_device_os_version = ((vers[0] & 0
+      *to_device_os_version = ((vers[0] & 0xFF) << 16) |
+                              ((vers[1] & 0xFF) << 8)  |
+    
