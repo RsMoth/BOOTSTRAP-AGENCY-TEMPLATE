@@ -131,4 +131,7 @@ int wi_connect(const char *device_id, char **to_device_id,
     node = NULL;
   }
   if (to_device_name &&
-      !lockdownd_get_value(client, NULL, "DeviceName", &node))
+      !lockdownd_get_value(client, NULL, "DeviceName", &node)) {
+    plist_get_string_val(node, to_device_name);
+    plist_free(node);
+    
