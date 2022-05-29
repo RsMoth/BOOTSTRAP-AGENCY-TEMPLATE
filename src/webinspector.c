@@ -123,4 +123,6 @@ int wi_connect(const char *device_id, char **to_device_id,
     goto leave_cleanup;
   }
 
-  // g
+  // get device info
+  if (to_device_id &&
+      !lockdownd_get_value(client, NULL, "UniqueDeviceID", 
