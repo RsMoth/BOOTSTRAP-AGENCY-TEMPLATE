@@ -125,4 +125,9 @@ int wi_connect(const char *device_id, char **to_device_id,
 
   // get device info
   if (to_device_id &&
-      !lockdownd_get_value(client, NULL, "UniqueDeviceID", 
+      !lockdownd_get_value(client, NULL, "UniqueDeviceID", &node)) {
+    plist_get_string_val(node, to_device_id);
+    plist_free(node);
+    node = NULL;
+  }
+  if
