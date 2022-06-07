@@ -154,4 +154,5 @@ int wi_connect(const char *device_id, char **to_device_id,
   }
 
   // start webinspector, get port
-  if (
+  if (lockdownd_start_service(client, "com.apple.webinspector", &service) ||
+      !service->port) 
