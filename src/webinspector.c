@@ -145,4 +145,6 @@ int wi_connect(const char *device_id, char **to_device_id,
           &vers[0], &vers[1], &vers[2]) >= 2) {
       *to_device_os_version = ((vers[0] & 0xFF) << 16) |
                               ((vers[1] & 0xFF) << 8)  |
-    
+                               (vers[2] & 0xFF);
+    } else {
+      *to_device_os_ve
