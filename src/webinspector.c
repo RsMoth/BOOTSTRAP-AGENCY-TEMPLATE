@@ -147,4 +147,11 @@ int wi_connect(const char *device_id, char **to_device_id,
                               ((vers[1] & 0xFF) << 8)  |
                                (vers[2] & 0xFF);
     } else {
-      *to_device_os_ve
+      *to_device_os_version = 0;
+    }
+    free(s_version);
+    plist_free(node);
+  }
+
+  // start webinspector, get port
+  if (
