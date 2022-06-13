@@ -160,4 +160,6 @@ int wi_connect(const char *device_id, char **to_device_id,
     goto leave_cleanup;
   }
 
-  // connect 
+  // connect to webinspector
+  if (idevice_connect(phone, service->port, &connection)) {
+    per
