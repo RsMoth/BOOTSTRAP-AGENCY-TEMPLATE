@@ -162,4 +162,9 @@ int wi_connect(const char *device_id, char **to_device_id,
 
   // connect to webinspector
   if (idevice_connect(phone, service->port, &connection)) {
-    per
+    perror("idevice_connect failed!");
+    goto leave_cleanup;
+  }
+
+  // enable ssl
+  if (service->ss
