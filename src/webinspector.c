@@ -167,4 +167,6 @@ int wi_connect(const char *device_id, char **to_device_id,
   }
 
   // enable ssl
-  if (service->ss
+  if (service->ssl_enabled == 1) {
+    if (!to_ssl_session || idevice_connection_enable_ssl(connection) ||
+ 
