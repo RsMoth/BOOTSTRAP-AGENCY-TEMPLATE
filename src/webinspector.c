@@ -170,4 +170,10 @@ int wi_connect(const char *device_id, char **to_device_id,
   if (service->ssl_enabled == 1) {
     if (!to_ssl_session || idevice_connection_enable_ssl(connection) ||
         idevice_connection_get_ssl_session(connection, &ssl_session)) {
-      perror("ssl connection failed!")
+      perror("ssl connection failed!");
+      goto leave_cleanup;
+    }
+    *to_ssl_session = ssl_session;
+  }
+
+  if (cl
