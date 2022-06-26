@@ -176,4 +176,7 @@ int wi_connect(const char *device_id, char **to_device_id,
     *to_ssl_session = ssl_session;
   }
 
-  if (cl
+  if (client) {
+    // not needed anymore
+    lockdownd_client_free(client);
+    client = NULL
