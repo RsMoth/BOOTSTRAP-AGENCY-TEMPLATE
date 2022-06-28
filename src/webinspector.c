@@ -179,4 +179,9 @@ int wi_connect(const char *device_id, char **to_device_id,
   if (client) {
     // not needed anymore
     lockdownd_client_free(client);
-    client = NULL
+    client = NULL;
+  }
+
+  // extract the connection fd
+  if (idevice_connection_get_fd(connection, &fd)) {
+    perror("Unable
