@@ -184,4 +184,8 @@ int wi_connect(const char *device_id, char **to_device_id,
 
   // extract the connection fd
   if (idevice_connection_get_fd(connection, &fd)) {
-    perror("Unable
+    perror("Unable to get connection file descriptor.");
+    goto leave_cleanup;
+  }
+
+  if (recv_timeo
