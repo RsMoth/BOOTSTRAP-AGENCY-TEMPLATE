@@ -192,3 +192,7 @@ int wi_connect(const char *device_id, char **to_device_id,
 #ifdef WIN32
     u_long nb = 1;
     if (ioctlsocket(fd, FIONBIO, &nb)) {
+      fprintf(stderr, "webinspector: could not set socket to non-blocking");
+    }
+#else
+    int opts = fcntl(fd,
