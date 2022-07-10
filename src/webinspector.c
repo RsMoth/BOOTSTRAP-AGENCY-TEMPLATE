@@ -188,4 +188,7 @@ int wi_connect(const char *device_id, char **to_device_id,
     goto leave_cleanup;
   }
 
-  if (recv_timeo
+  if (recv_timeout < 0) {
+#ifdef WIN32
+    u_long nb = 1;
+    if (ioctlsocket(fd, FIONBIO, &nb)) {
