@@ -196,4 +196,6 @@ int wi_connect(const char *device_id, char **to_device_id,
     }
 #else
     int opts = fcntl(fd, F_GETFL);
-    if (!opts || fcntl(fd, F_SETFL, (opts | O_NONBLOCK)) < 0) 
+    if (!opts || fcntl(fd, F_SETFL, (opts | O_NONBLOCK)) < 0) {
+      perror("Could not set socket to non-blocking");
+      goto leave_cle
