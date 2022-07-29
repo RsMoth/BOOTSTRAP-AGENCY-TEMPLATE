@@ -198,4 +198,8 @@ int wi_connect(const char *device_id, char **to_device_id,
     int opts = fcntl(fd, F_GETFL);
     if (!opts || fcntl(fd, F_SETFL, (opts | O_NONBLOCK)) < 0) {
       perror("Could not set socket to non-blocking");
-      goto leave_cle
+      goto leave_cleanup;
+    }
+#endif
+  } else {
+    long millis = (recv_timeout > 0 ? recv_timeou
