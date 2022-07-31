@@ -202,4 +202,6 @@ int wi_connect(const char *device_id, char **to_device_id,
     }
 #endif
   } else {
-    long millis = (recv_timeout > 0 ? recv_timeou
+    long millis = (recv_timeout > 0 ? recv_timeout : 5000);
+    struct timeval tv;
+    tv.tv_sec = (time_t) (millis / 1000)
