@@ -206,4 +206,6 @@ int wi_connect(const char *device_id, char **to_device_id,
     struct timeval tv;
     tv.tv_sec = (time_t) (millis / 1000);
     tv.tv_usec = (time_t) ((millis - (tv.tv_sec * 1000)) * 1000);
-    if (setsock
+    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,
+          sizeof(tv))) {
+      perror("Co
