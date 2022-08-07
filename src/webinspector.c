@@ -218,4 +218,10 @@ int wi_connect(const char *device_id, char **to_device_id,
 
 leave_cleanup:
 #ifdef WIN32
-  if (ret < 0 && fd != INVALID_SOCKET
+  if (ret < 0 && fd != INVALID_SOCKET) {
+    closesocket(fd);
+  }
+#else
+  if (ret < 0 && fd > 0) {
+    close(fd);
+  
