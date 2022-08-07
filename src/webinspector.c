@@ -213,4 +213,9 @@ int wi_connect(const char *device_id, char **to_device_id,
     }
   }
 
-  // suc
+  // success
+  ret = fd;
+
+leave_cleanup:
+#ifdef WIN32
+  if (ret < 0 && fd != INVALID_SOCKET
