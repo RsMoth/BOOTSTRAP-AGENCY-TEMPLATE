@@ -224,4 +224,8 @@ leave_cleanup:
 #else
   if (ret < 0 && fd > 0) {
     close(fd);
-  
+  }
+#endif
+  // don't call usbmuxd_disconnect(fd)!
+  //idevice_disconnect(connection);
+  free(c
