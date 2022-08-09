@@ -228,4 +228,11 @@ leave_cleanup:
 #endif
   // don't call usbmuxd_disconnect(fd)!
   //idevice_disconnect(connection);
-  free(c
+  free(connection);
+  lockdownd_client_free(client);
+  idevice_free(phone);
+  return ret;
+}
+
+//
+// SEN
