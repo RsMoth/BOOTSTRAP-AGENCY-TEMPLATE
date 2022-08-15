@@ -235,4 +235,9 @@ leave_cleanup:
 }
 
 //
-// SEN
+// SEND
+//
+
+wi_status wi_on_error(wi_t self, const char *format, ...) {
+  va_list args;
+  va_start(args, f
