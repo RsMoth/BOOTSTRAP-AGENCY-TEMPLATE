@@ -240,4 +240,8 @@ leave_cleanup:
 
 wi_status wi_on_error(wi_t self, const char *format, ...) {
   va_list args;
-  va_start(args, f
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  fprintf(stderr, "\n");
+  va_end(args);
+  return
