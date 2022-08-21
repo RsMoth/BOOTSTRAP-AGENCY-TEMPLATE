@@ -244,4 +244,8 @@ wi_status wi_on_error(wi_t self, const char *format, ...) {
   vfprintf(stderr, format, args);
   fprintf(stderr, "\n");
   va_end(args);
-  return
+  return WI_ERROR;
+}
+
+wi_status wi_on_debug(wi_t self, const char *message,
+    const char *buf, size_t le
