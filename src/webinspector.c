@@ -248,4 +248,7 @@ wi_status wi_on_error(wi_t self, const char *format, ...) {
 }
 
 wi_status wi_on_debug(wi_t self, const char *message,
-    const char *buf, size_t le
+    const char *buf, size_t length) {
+  if (self->is_debug && *self->is_debug) {
+    char *text;
+  
