@@ -251,4 +251,5 @@ wi_status wi_on_debug(wi_t self, const char *message,
     const char *buf, size_t length) {
   if (self->is_debug && *self->is_debug) {
     char *text;
-  
+    cb_asprint(&text, buf, length, 80, 30);
+    printf("%s[%zd]:\n%s\n", message, len
