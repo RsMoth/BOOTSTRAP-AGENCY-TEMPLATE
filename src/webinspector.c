@@ -252,4 +252,12 @@ wi_status wi_on_debug(wi_t self, const char *message,
   if (self->is_debug && *self->is_debug) {
     char *text;
     cb_asprint(&text, buf, length, 80, 30);
-    printf("%s[%zd]:\n%s\n", message, len
+    printf("%s[%zd]:\n%s\n", message, length, text);
+    free(text);
+  }
+  return WI_SUCCESS;
+}
+
+/*
+   WIRFinalMessageKey
+   __selector
