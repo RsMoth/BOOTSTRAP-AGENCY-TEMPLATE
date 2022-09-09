@@ -261,3 +261,7 @@ wi_status wi_on_debug(wi_t self, const char *message,
 /*
    WIRFinalMessageKey
    __selector
+   __argument
+ */
+wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
+  wi_private_t my =
