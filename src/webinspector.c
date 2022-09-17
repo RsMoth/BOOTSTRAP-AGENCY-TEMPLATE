@@ -274,3 +274,7 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
   uint32_t i;
   for (i = 0; ; i += MAX_RPC_LEN) {
     bool is_partial = false;
+    char *data = NULL;
+    uint32_t data_len = 0;
+    if (!my->partials_supported) {
+      data 
