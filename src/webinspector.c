@@ -270,4 +270,7 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
   plist_to_bin(rpc_dict, &rpc_bin, &rpc_len);
   // if our message is <8k, we'll send a single final_msg,
   // otherwise we'll send <8k partial_msg "chunks" then a final_msg "chunk"
-  wi_status ret
+  wi_status ret = WI_ERROR;
+  uint32_t i;
+  for (i = 0; ; i += MAX_RPC_LEN) {
+    bool is_partial = false;
