@@ -277,4 +277,8 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
     char *data = NULL;
     uint32_t data_len = 0;
     if (!my->partials_supported) {
-      data 
+      data = rpc_bin;
+      data_len = rpc_len;
+      rpc_bin = NULL;
+    } else {
+      is_p
