@@ -281,4 +281,6 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
       data_len = rpc_len;
       rpc_bin = NULL;
     } else {
-      is_p
+      is_partial = (rpc_len - i > MAX_RPC_LEN);
+      plist_t wi_dict = plist_new_dict();
+      plist_t wi_rpc 
