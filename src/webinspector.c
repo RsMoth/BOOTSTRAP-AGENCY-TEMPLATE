@@ -288,4 +288,8 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
       plist_dict_set_item(wi_dict,
           (is_partial ? "WIRPartialMessageKey" : "WIRFinalMessageKey"), wi_rpc);
       plist_to_bin(wi_dict, &data, &data_len);
-      plist_free(wi_dict
+      plist_free(wi_dict);
+      wi_dict = NULL;
+      wi_rpc = NULL; // freed by wi_dict
+      if (!data) {
+ 
