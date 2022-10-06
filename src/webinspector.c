@@ -292,4 +292,9 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
       wi_dict = NULL;
       wi_rpc = NULL; // freed by wi_dict
       if (!data) {
- 
+        break;
+      }
+    }
+
+    size_t length = data_len + 4;
+    char *out_head = (char
