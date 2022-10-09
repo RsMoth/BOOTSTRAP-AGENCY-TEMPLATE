@@ -297,4 +297,7 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
     }
 
     size_t length = data_len + 4;
-    char *out_head = (char
+    char *out_head = (char*)malloc(length * sizeof(char));
+    if (!out_head) {
+      if (my->partials_supported) {
+ 
