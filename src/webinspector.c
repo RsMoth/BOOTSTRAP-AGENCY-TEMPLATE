@@ -307,4 +307,6 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
     char *out_tail = out_head;
 
     // write big-endian int
-   
+    *out_tail++ = ((data_len >> 24) & 0xFF);
+    *out_tail++ = ((data_len >> 16) & 0xFF);
+    *out_tail
