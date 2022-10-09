@@ -300,4 +300,11 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
     char *out_head = (char*)malloc(length * sizeof(char));
     if (!out_head) {
       if (my->partials_supported) {
- 
+        free(data);
+      }
+      break;
+    }
+    char *out_tail = out_head;
+
+    // write big-endian int
+   
