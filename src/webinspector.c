@@ -312,4 +312,8 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
     *out_tail++ = ((data_len >> 8) & 0xFF);
     *out_tail++ = (data_len & 0xFF);
 
-    // w
+    // write data
+    memcpy(out_tail, data, data_len);
+    free(data);
+
+    wi_on_debug(self, "wi.se
