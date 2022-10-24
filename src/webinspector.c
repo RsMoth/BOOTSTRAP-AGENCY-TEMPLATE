@@ -337,3 +337,8 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
 //
 
 wi_status wi_parse_length(wi_t self, const char *buf, size_t *to_length) {
+  if (!buf || !to_length) {
+    return WI_ERROR;
+  }
+  *to_length = (
+      (
