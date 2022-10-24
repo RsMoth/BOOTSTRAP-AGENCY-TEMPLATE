@@ -317,4 +317,10 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
     free(data);
 
     wi_on_debug(self, "wi.send_packet", out_head, length);
-    wi_status not_sent = self->send_packet(self, out_head, l
+    wi_status not_sent = self->send_packet(self, out_head, length);
+    free(out_head);
+    if (not_sent) {
+      break;
+    }
+
+    if
