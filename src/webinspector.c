@@ -331,3 +331,9 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
   free(rpc_bin);
   return ret;
 }
+
+//
+// RECV
+//
+
+wi_status wi_parse_length(wi_t self, const char *buf, size_t *to_length) {
