@@ -323,4 +323,11 @@ wi_status wi_send_plist(wi_t self, plist_t rpc_dict) {
       break;
     }
 
-    if
+    if (!is_partial) {
+      ret = WI_SUCCESS;
+      break;
+    }
+  }
+  free(rpc_bin);
+  return ret;
+}
