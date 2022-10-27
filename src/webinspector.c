@@ -345,4 +345,5 @@ wi_status wi_parse_length(wi_t self, const char *buf, size_t *to_length) {
       ((((unsigned char) buf[1]) & 0xFF) << 16) |
       ((((unsigned char) buf[2]) & 0xFF) << 8) |
       (((unsigned char) buf[3]) & 0xFF));
-  if
+  if (MAX_BODY_LENGTH > 0 && *to_length > MAX_BODY_LENGTH) {
+#define TO_CHAR(c) ((c) >= ' ' &&
