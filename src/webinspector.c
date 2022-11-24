@@ -350,4 +350,6 @@ wi_status wi_parse_length(wi_t self, const char *buf, size_t *to_length) {
     return self->on_error(self, "Invalid packet header "
         "0x%x%x%x%x == %c%c%c%c == %zd",
         buf[0], buf[1], buf[2], buf[3],
-        TO_CHAR(buf[0]), TO
+        TO_CHAR(buf[0]), TO_CHAR(buf[1]),
+        TO_CHAR(buf[2]), TO_CHAR(buf[3]),
+        *to_length);
