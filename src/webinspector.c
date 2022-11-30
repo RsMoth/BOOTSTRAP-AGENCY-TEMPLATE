@@ -357,4 +357,11 @@ wi_status wi_parse_length(wi_t self, const char *buf, size_t *to_length) {
   return WI_SUCCESS;
 }
 
-wi_status wi_parse_plist(wi_t self, const char *from_buf,
+wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
+    plist_t *to_rpc_dict, bool *to_is_partial) {
+  wi_private_t my = self->private_state;
+  *to_is_partial = false;
+  *to_rpc_dict = NULL;
+
+  if (!my->partials_supported) {
+    p
