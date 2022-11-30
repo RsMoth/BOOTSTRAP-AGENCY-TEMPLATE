@@ -353,3 +353,8 @@ wi_status wi_parse_length(wi_t self, const char *buf, size_t *to_length) {
         TO_CHAR(buf[0]), TO_CHAR(buf[1]),
         TO_CHAR(buf[2]), TO_CHAR(buf[3]),
         *to_length);
+  }
+  return WI_SUCCESS;
+}
+
+wi_status wi_parse_plist(wi_t self, const char *from_buf,
