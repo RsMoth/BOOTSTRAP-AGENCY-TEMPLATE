@@ -367,4 +367,6 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
     plist_from_bin(from_buf, length, to_rpc_dict);
   } else {
     plist_t wi_dict = NULL;
-    plist
+    plist_from_bin(from_buf, length, &wi_dict);
+    if (!wi_dict) {
+      return WI
