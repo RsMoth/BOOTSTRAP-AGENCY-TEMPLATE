@@ -372,4 +372,5 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
       return WI_ERROR;
     }
     plist_t wi_rpc = plist_dict_get_item(wi_dict, "WIRFinalMessageKey");
-    i
+    if (!wi_rpc) {
+      wi_rpc = plist_dict_get_item(wi_dict, "WIRPartialMessageK
