@@ -382,4 +382,7 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
 
     uint64_t rpc_len = 0;
     char *rpc_bin = NULL;
-    plist_get_data_val(w
+    plist_get_data_val(wi_rpc, &rpc_bin, &rpc_len);
+    plist_free(wi_dict); // also frees wi_rpc
+    if (!rpc_bin) {
+    
