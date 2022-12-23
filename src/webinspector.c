@@ -377,4 +377,9 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
       if (!wi_rpc) {
         return WI_ERROR;
       }
-      *to_is_partial = tru
+      *to_is_partial = true;
+    }
+
+    uint64_t rpc_len = 0;
+    char *rpc_bin = NULL;
+    plist_get_data_val(w
