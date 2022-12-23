@@ -373,4 +373,8 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
     }
     plist_t wi_rpc = plist_dict_get_item(wi_dict, "WIRFinalMessageKey");
     if (!wi_rpc) {
-      wi_rpc = plist_dict_get_item(wi_dict, "WIRPartialMessageK
+      wi_rpc = plist_dict_get_item(wi_dict, "WIRPartialMessageKey");
+      if (!wi_rpc) {
+        return WI_ERROR;
+      }
+      *to_is_partial = tru
