@@ -394,4 +394,6 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
       if (cb_ensure_capacity(my->partial, rpc_len)) {
         return self->on_error(self, "Out of memory");
       }
-      memcpy(
+      memcpy(my->partial->tail, rpc_bin, rpc_len);
+      my->partial->tail += rpc_len;
+      p_le
