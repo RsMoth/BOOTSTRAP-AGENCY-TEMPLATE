@@ -385,4 +385,8 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
     plist_get_data_val(wi_rpc, &rpc_bin, &rpc_len);
     plist_free(wi_dict); // also frees wi_rpc
     if (!rpc_bin) {
-    
+      return WI_ERROR;
+    }
+    // assert rpc_len < MAX_RPC_LEN?
+
+    size_t p_length = my->partial->tail
