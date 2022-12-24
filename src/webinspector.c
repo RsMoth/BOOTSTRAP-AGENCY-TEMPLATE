@@ -389,4 +389,6 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
     }
     // assert rpc_len < MAX_RPC_LEN?
 
-    size_t p_length = my->partial->tail
+    size_t p_length = my->partial->tail - my->partial->head;
+    if (*to_is_partial || p_length) {
+      if (cb_ensure_capacity(my->partia
