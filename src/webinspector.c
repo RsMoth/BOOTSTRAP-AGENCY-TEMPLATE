@@ -396,4 +396,7 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
       }
       memcpy(my->partial->tail, rpc_bin, rpc_len);
       my->partial->tail += rpc_len;
-      p_le
+      p_length += rpc_len;
+      free(rpc_bin);
+      if (*to_is_partial) {
+        return WI_SUCCES
