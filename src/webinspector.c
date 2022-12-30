@@ -399,4 +399,9 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
       p_length += rpc_len;
       free(rpc_bin);
       if (*to_is_partial) {
-        return WI_SUCCES
+        return WI_SUCCESS;
+      }
+    }
+
+    if (p_length) {
+      plist_from_bin(my->partial->head, (uint32_t)p_l
