@@ -404,4 +404,7 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
     }
 
     if (p_length) {
-      plist_from_bin(my->partial->head, (uint32_t)p_l
+      plist_from_bin(my->partial->head, (uint32_t)p_length, to_rpc_dict);
+      cb_clear(my->partial);
+    } else {
+      plist_from_bin(rpc_bin, (
