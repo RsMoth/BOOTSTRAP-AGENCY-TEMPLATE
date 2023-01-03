@@ -418,4 +418,7 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
 wi_status wi_recv_packet(wi_t self, const char *packet, ssize_t length) {
   wi_on_debug(self, "wi.recv_packet", packet, length);
 
-  size_t body_leng
+  size_t body_length = 0;
+  plist_t rpc_dict = NULL;
+  bool is_partial = false;
+  if (!packet || length 
