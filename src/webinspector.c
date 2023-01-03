@@ -412,4 +412,7 @@ wi_status wi_parse_plist(wi_t self, const char *from_buf, size_t length,
     }
   }
 
-  return (*to_
+  return (*to_rpc_dict ? WI_SUCCESS : WI_ERROR);
+}
+
+wi_status wi_recv_packet(wi_t self, const char *packet,
