@@ -421,4 +421,5 @@ wi_status wi_recv_packet(wi_t self, const char *packet, ssize_t length) {
   size_t body_length = 0;
   plist_t rpc_dict = NULL;
   bool is_partial = false;
-  if (!packet || length 
+  if (!packet || length < 4 || wi_parse_length(self, packet, &body_length) ||
+      //TODO (body_length != le
