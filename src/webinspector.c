@@ -422,4 +422,5 @@ wi_status wi_recv_packet(wi_t self, const char *packet, ssize_t length) {
   plist_t rpc_dict = NULL;
   bool is_partial = false;
   if (!packet || length < 4 || wi_parse_length(self, packet, &body_length) ||
-      //TODO (body_length != le
+      //TODO (body_length != length - 4) ||
+      wi_parse_plist(self, packet + 4, body_length, &rpc_dict, &is_partial)) {
