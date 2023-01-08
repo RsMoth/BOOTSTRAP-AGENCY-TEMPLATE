@@ -424,3 +424,7 @@ wi_status wi_recv_packet(wi_t self, const char *packet, ssize_t length) {
   if (!packet || length < 4 || wi_parse_length(self, packet, &body_length) ||
       //TODO (body_length != length - 4) ||
       wi_parse_plist(self, packet + 4, body_length, &rpc_dict, &is_partial)) {
+    // invalid packet
+    char *text = NULL;
+    if (body_length != length - 4) {
+      if (asprintf(&t
