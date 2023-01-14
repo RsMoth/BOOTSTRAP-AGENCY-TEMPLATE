@@ -428,4 +428,9 @@ wi_status wi_recv_packet(wi_t self, const char *packet, ssize_t length) {
     char *text = NULL;
     if (body_length != length - 4) {
       if (asprintf(&text, "size %zd != %zd - 4", body_length, length) < 0) {
-        return self->on_error(self
+        return self->on_error(self, "asprintf failed");
+      }
+    } else {
+      cb_asprint(&text, packet, length, 80, 50);
+    }
+    wi_st
