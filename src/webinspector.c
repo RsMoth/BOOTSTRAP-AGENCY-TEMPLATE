@@ -433,4 +433,7 @@ wi_status wi_recv_packet(wi_t self, const char *packet, ssize_t length) {
     } else {
       cb_asprint(&text, packet, length, 80, 50);
     }
-    wi_st
+    wi_status ret = self->on_error(self, "Invalid packet:\n%s\n", text);
+    free(text);
+    return ret;
+  
