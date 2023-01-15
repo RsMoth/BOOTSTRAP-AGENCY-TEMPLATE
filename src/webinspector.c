@@ -442,4 +442,9 @@ wi_status wi_recv_packet(wi_t self, const char *packet, ssize_t length) {
     return WI_SUCCESS;
   }
   wi_status ret = self->recv_plist(self, rpc_dict);
-  plist_f
+  plist_free(rpc_dict);
+  return ret;
+}
+
+wi_status wi_recv_loop(wi_t self) {
+  wi_private_t my = 
