@@ -436,4 +436,10 @@ wi_status wi_recv_packet(wi_t self, const char *packet, ssize_t length) {
     wi_status ret = self->on_error(self, "Invalid packet:\n%s\n", text);
     free(text);
     return ret;
-  
+  }
+
+  if (is_partial) {
+    return WI_SUCCESS;
+  }
+  wi_status ret = self->recv_plist(self, rpc_dict);
+  plist_f
