@@ -447,4 +447,7 @@ wi_status wi_recv_packet(wi_t self, const char *packet, ssize_t length) {
 }
 
 wi_status wi_recv_loop(wi_t self) {
-  wi_private_t my = 
+  wi_private_t my = self->private_state;
+  wi_status ret;
+  const char *in_head = my->in->in_head;
+  const char *
