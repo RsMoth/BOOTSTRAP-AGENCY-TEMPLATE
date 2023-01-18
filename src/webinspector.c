@@ -457,4 +457,9 @@ wi_status wi_recv_loop(wi_t self) {
       // can read body_length now
       size_t len;
       ret = wi_parse_length(self, in_head, &len);
-      
+      if (ret) {
+        in_head += 4;
+        break;
+      }
+      my->body_length = len;
+      my->h
