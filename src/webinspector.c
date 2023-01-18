@@ -453,4 +453,5 @@ wi_status wi_recv_loop(wi_t self) {
   const char *in_tail = my->in->in_tail;
   while (1) {
     size_t in_length = in_tail - in_head;
-  
+    if (!my->has_length && in_length >= 4) {
+      // can read body_length 
