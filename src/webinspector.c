@@ -462,4 +462,6 @@ wi_status wi_recv_loop(wi_t self) {
         break;
       }
       my->body_length = len;
-      my->h
+      my->has_length = true;
+      // don't advance in_head yet
+    } else if (my->has_length && in_len
