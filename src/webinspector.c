@@ -466,4 +466,7 @@ wi_status wi_recv_loop(wi_t self) {
       // don't advance in_head yet
     } else if (my->has_length && in_length >= my->body_length + 4) {
       // can read body now
-      ret = self->recv_packet(self, i
+      ret = self->recv_packet(self, in_head, my->body_length + 4);
+      in_head += my->body_length + 4;
+      my->has_length = false;
+      my->
