@@ -469,4 +469,9 @@ wi_status wi_recv_loop(wi_t self) {
       ret = self->recv_packet(self, in_head, my->body_length + 4);
       in_head += my->body_length + 4;
       my->has_length = false;
-      my->
+      my->body_length = 0;
+      if (ret) {
+        break;
+      }
+    } else {
+      // need mo
