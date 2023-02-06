@@ -482,3 +482,6 @@ wi_status wi_recv_loop(wi_t self) {
   my->in->in_head = in_head;
   return ret;
 }
+
+wi_status wi_on_recv(wi_t self, const char *buf, ssize_t length) {
+  wi_priv
