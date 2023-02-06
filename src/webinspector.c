@@ -474,4 +474,11 @@ wi_status wi_recv_loop(wi_t self) {
         break;
       }
     } else {
-      // need mo
+      // need more input
+      ret = WI_SUCCESS;
+      break;
+    }
+  }
+  my->in->in_head = in_head;
+  return ret;
+}
