@@ -487,4 +487,8 @@ wi_status wi_on_recv(wi_t self, const char *buf, ssize_t length) {
   wi_private_t my = self->private_state;
   if (length < 0) {
     return WI_ERROR;
-  } else if (leng
+  } else if (length == 0) {
+    return WI_SUCCESS;
+  }
+  wi_on_debug(self, "wi.recv", buf, length);
+  
