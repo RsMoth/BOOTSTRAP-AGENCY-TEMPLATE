@@ -492,4 +492,8 @@ wi_status wi_on_recv(wi_t self, const char *buf, ssize_t length) {
   }
   wi_on_debug(self, "wi.recv", buf, length);
   if (cb_begin_input(my->in, buf, length)) {
-    return self->on_error(self, "begin_input buf
+    return self->on_error(self, "begin_input buffer error");
+  }
+  wi_status ret = wi_recv_loop(self);
+  if (cb_end_input(my->in)) {
+    return
