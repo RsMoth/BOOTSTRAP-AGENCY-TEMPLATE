@@ -502,4 +502,10 @@ wi_status wi_on_recv(wi_t self, const char *buf, ssize_t length) {
 }
 
 //
-// S
+// STRUCTS
+//
+
+void wi_private_free(wi_private_t my) {
+  if (my) {
+    cb_free(my->in);
+  
