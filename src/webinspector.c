@@ -508,4 +508,9 @@ wi_status wi_on_recv(wi_t self, const char *buf, ssize_t length) {
 void wi_private_free(wi_private_t my) {
   if (my) {
     cb_free(my->in);
-  
+    cb_free(my->partial);
+    memset(my, 0, sizeof(struct wi_private));
+    free(my);
+  }
+}
+wi_p
