@@ -513,4 +513,6 @@ void wi_private_free(wi_private_t my) {
     free(my);
   }
 }
-wi_p
+wi_private_t wi_private_new() {
+  wi_private_t my = (wi_private_t)malloc(sizeof(
+        
