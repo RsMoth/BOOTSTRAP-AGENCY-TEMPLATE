@@ -515,4 +515,7 @@ void wi_private_free(wi_private_t my) {
 }
 wi_private_t wi_private_new() {
   wi_private_t my = (wi_private_t)malloc(sizeof(
-        
+        struct wi_private));
+  if (my) {
+    memset(my, 0, sizeof(struct wi_private));
+    my->in 
