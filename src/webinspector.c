@@ -518,4 +518,7 @@ wi_private_t wi_private_new() {
         struct wi_private));
   if (my) {
     memset(my, 0, sizeof(struct wi_private));
-    my->in 
+    my->in = cb_new();
+    my->partial = cb_new();
+    if (!my->in || !my->partial) {
+      wi_priva
