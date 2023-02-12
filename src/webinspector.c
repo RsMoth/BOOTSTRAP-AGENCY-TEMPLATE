@@ -530,4 +530,7 @@ wi_private_t wi_private_new() {
 
 
 void wi_free(wi_t self) {
-  if (self)
+  if (self) {
+    wi_private_free(self->private_state);
+    memset(self, 0, sizeof(struct wi_struct));
+    f
