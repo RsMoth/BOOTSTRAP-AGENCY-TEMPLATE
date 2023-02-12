@@ -537,4 +537,8 @@ void wi_free(wi_t self) {
   }
 }
 wi_t wi_new(bool partials_supported) {
-  wi_t self = (wi_t)malloc(sizeof(st
+  wi_t self = (wi_t)malloc(sizeof(struct wi_struct));
+  if (!self) {
+    return NULL;
+  }
+  memset(self, 0, sizeof(struct wi_st
