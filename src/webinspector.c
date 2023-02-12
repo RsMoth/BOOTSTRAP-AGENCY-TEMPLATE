@@ -521,4 +521,13 @@ wi_private_t wi_private_new() {
     my->in = cb_new();
     my->partial = cb_new();
     if (!my->in || !my->partial) {
-      wi_priva
+      wi_private_free(my);
+      return NULL;
+    }
+  }
+  return my;
+}
+
+
+void wi_free(wi_t self) {
+  if (self)
