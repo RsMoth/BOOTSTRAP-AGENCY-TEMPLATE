@@ -546,4 +546,9 @@ wi_t wi_new(bool partials_supported) {
   self->send_plist = wi_send_plist;
   self->recv_packet = wi_recv_packet;
   self->on_error = wi_on_error;
-  self->private_sta
+  self->private_state = wi_private_new();
+  if (!self->private_state) {
+    wi_free(self);
+    return NULL;
+  }
+  self->p
