@@ -544,4 +544,6 @@ wi_t wi_new(bool partials_supported) {
   memset(self, 0, sizeof(struct wi_struct));
   self->on_recv = wi_on_recv;
   self->send_plist = wi_send_plist;
- 
+  self->recv_packet = wi_recv_packet;
+  self->on_error = wi_on_error;
+  self->private_sta
