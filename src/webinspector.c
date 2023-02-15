@@ -551,4 +551,6 @@ wi_t wi_new(bool partials_supported) {
     wi_free(self);
     return NULL;
   }
-  self->p
+  self->private_state->partials_supported = partials_supported;
+  return self;
+}
