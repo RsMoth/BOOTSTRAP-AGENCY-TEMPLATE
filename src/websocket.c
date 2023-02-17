@@ -196,3 +196,106 @@ ws_status ws_send_connect(ws_t self,
   ws_on_debug(self, "ws.send_connect", my->out->tail, out_length);
   ws_status ret = self->send_data(self, my->out->tail, out_length);
   my->out->tail = out_tail;
+  return ret;
+}
+
+ws_status ws_send_upgrade(ws_t self) {
+  ws_private_t my = self->private_state;
+
+  if (!my->resource) {
+    return self->on_error(self, "Missing HTTP resource");
+  }
+  if (!my->sec_key) {
+    return self->on_error(self, "Missing WebSocket headers");
+  }
+
+  my->sec_answer = ws_compute_answer(my->sec_key);
+  if (!my->sec_answer) {
+    return self->on_error(self, "Unable to compute answer for %s",
+        my->sec_key);
+  }
+
+  size_t needed = (1024 + strlen(my->sec_answer) +
+      (my->protocol ? strlen(my->protocol) : 0));
+  cb_clear(my->out);
+  if (cb_ensure_capacity(my->out, needed)) {
+    return self->on_error(self, "Out of memory");
+  }
+  char *out_tail = my->out->tail;
+
+  out_tail += sprintf(out_tail,
+      "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Connection: Upgrade\r\n");
+  if (my->protocol) {
+    out_tail += sprintf(out_tail, "Sec-WebSocket-Protocol: %s\r\n",
+        my->protocol);
+  }
+  out_tail += sprintf(out_tail, "Sec-WebSocket-Accept: %s\r\n",
+      my->sec_answer);
+  out_tail += sprintf(out_tail, "\r\n");
+
+  size_t out_length = out_tail - my->out->tail;
+  ws_on_debug(self, "ws.sending_upgrade", my->out->tail, out_length);
+  ws_status ret = self->send_data(self, my->out->tail, out_length);
+  my->out->tail = out_tail;
+  return ret;
+}
+
+ws_status ws_send_frame(ws_t self,
+    bool is_fin, uint8_t opcode, bool is_masking,
+    const char *payload_data, size_t payload_length) {
+  ws_private_t my = self->private_state;
+
+  if (my->sent_close) {
+    return self->on_error(self, "Already sent close_frame");
+  }
+
+  if (!payload_data) {
+    return self->on_error(self, "Null arg");
+  }
+
+  if (opcode != OPCODE_CONTINUATION && opcode != OPCODE_TEXT &&
+      opcode != OPCODE_BINARY && opcode != OPCODE_CLOSE &&
+      opcode != OPCODE_PING && opcode != OPCODE_PONG) {
+    return self->on_error(self, "Invalid opcode 0x%x", opcode);
+  }
+  bool is_control = (opcode >= OPCODE_CLOSE ? true : false);
+  if (is_control) {
+    if (!is_fin) {
+      return self->on_error(self, "Control 0x%x not fin", opcode);
+    }
+    if (payload_length > 125) {
+      return self->on_error(self, "Control 0x%x payload_length %zd > 125",
+          opcode, payload_length);
+    }
+  }
+
+  uint8_t opcode2 = opcode;
+  if (!is_control && my->continued_opcode) {
+    if (my->continued_opcode != opcode) {
+      return self->on_error(self, "Expecting continue of 0x%x not 0x%x",
+          my->continued_opcode, opcode);
+    }
+    opcode2 = OPCODE_CONTINUATION;
+  }
+
+  size_t i;
+  bool is_utf8 = (opcode2 == OPCODE_TEXT ? true : false);
+  if (is_utf8) {
+    unsigned int utf8_state = UTF8_VALID;
+    const char *payload_head = payload_data;
+    for (i = 0; i < payload_length; i++) {
+      unsigned char ch = *payload_head++;
+      utf8_state = validate_utf8[utf8_state + ch];
+      if (utf8_state == UTF8_INVALID) {
+        return self->on_error(self,
+            "Invalid %sUTF8 character 0x%x at %zd",
+            (is_masking ? "masked " :""), ch,
+            payload_head-1 - payload_data);
+      }
+    }
+  }
+
+  int8_t payload_n = (payload_length < 126 ? 0 :
+      payload_length < UINT16_MAX ? 2 : 8);
