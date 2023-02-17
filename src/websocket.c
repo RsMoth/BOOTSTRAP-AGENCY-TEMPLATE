@@ -105,3 +105,94 @@ static char *ws_compute_answer(const char *sec_key) {
   sha1_starts(&ctx);
   sha1_update(&ctx, (const unsigned char *)text, text_length-1);
   sha1_finish(&ctx, hash);
+  free(text);
+  text = NULL;
+
+  // base64 encode
+  size_t length = 0;
+  base64_encode(NULL, &length, NULL, 20);
+  char *ret = (char *)malloc(length);
+  if (!ret) {
+    return NULL;
+  }
+  if (base64_encode((unsigned char *)ret, &length, hash, 20)) {
+    free(ret);
+    return NULL;
+  }
+
+  return ret;
+}
+
+void ws_random_buf(char *buf, size_t len) {
+#ifdef __MACH__
+  arc4random_buf(buf, len);
+#else
+  static bool seeded = false;
+  if (!seeded) {
+    seeded = true;
+    // could fread from /dev/random
+    srand(time(NULL));
+  }
+  size_t i;
+  for (i = 0; i < len; i++) {
+    buf[i] = (char)rand();
+  }
+#endif
+}
+
+ws_status ws_send_connect(ws_t self,
+    const char *resource, const char *protocol,
+    const char *host, const char *origin) {
+  ws_private_t my = self->private_state;
+
+  if (!resource) {
+    return self->on_error(self, "Null arg");
+  }
+
+  char sec_ukey[20];
+  ws_random_buf(sec_ukey, 20);
+  size_t key_length = 0;
+  base64_encode(NULL, &key_length, NULL, 20);
+  char *sec_key = (char *)malloc(key_length);
+  if (!sec_key) {
+    return self->on_error(self, "Out of memory");
+  }
+  if (base64_encode((unsigned char *)sec_key, &key_length,
+      (const unsigned char *)sec_ukey, 20)) {
+    free(sec_key);
+    return self->on_error(self, "base64_encode failed");
+  }
+
+  size_t needed = (1024 + strlen(resource) + strlen(sec_key) +
+      (protocol ? strlen(protocol) : 0) +
+      (host ? strlen(host) : 0) +
+      (origin ? strlen(origin) : 0));
+  cb_clear(my->out);
+  if (cb_ensure_capacity(my->out, needed)) {
+    return self->on_error(self, "Output %zd exceeds buffer capacity",
+        needed);
+  }
+  char *out_tail = my->out->tail;
+
+  out_tail += sprintf(out_tail,
+      "GET %s HTTP/1.1\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Version: 13\r\n"
+      "Sec-WebSocket-Key: %s\r\n", resource, sec_key);
+  if (protocol) {
+    out_tail += sprintf(out_tail, "Sec-WebSocket-Protocol: %s\r\n",
+        protocol);
+  }
+  if (host) {
+    out_tail += sprintf(out_tail, "Host: %s\r\n", host);
+  }
+  if (origin) {
+    out_tail += sprintf(out_tail, "Origin: %s\r\n", origin);
+  }
+  out_tail += sprintf(out_tail, "\r\n");
+
+  size_t out_length = out_tail - my->out->tail;
+  ws_on_debug(self, "ws.send_connect", my->out->tail, out_length);
+  ws_status ret = self->send_data(self, my->out->tail, out_length);
+  my->out->tail = out_tail;
