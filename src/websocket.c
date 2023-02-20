@@ -299,3 +299,101 @@ ws_status ws_send_frame(ws_t self,
 
   int8_t payload_n = (payload_length < 126 ? 0 :
       payload_length < UINT16_MAX ? 2 : 8);
+
+  size_t needed = (2 + payload_n + (is_masking ? 4 : 0) + payload_length);
+  cb_clear(my->out);
+  if (cb_ensure_capacity(my->out, needed)) {
+    return self->on_error(self, "Out of memory");
+  }
+  char *out_tail = my->out->tail;
+
+  *out_tail++ = ((is_fin ? 0x80 : 0) | (opcode2 & 0x0F));
+
+  *out_tail++ = ((is_masking ? 0x80 : 0) | (!payload_n ? payload_length :
+        payload_n == 2 ? 126: 127));
+
+
+  int8_t j;
+  int8_t payload_mem_size = sizeof(payload_length);
+  for (j = payload_n - 1; j >= 0; j--) {
+    *out_tail++ = j >= payload_mem_size ? 0 : (unsigned char)((payload_length >> (j<<3)) & 0xFF);
+  }
+
+  if (is_masking) {
+    char mask[4];
+    ws_random_buf(mask, 4);
+    for (i = 0; i < 4; i++) {
+      *out_tail++ = (is_masking ? mask[i] : 0);
+    }
+    const char *payload_head = payload_data;
+    uint32_t mask_offset = 0;
+    for (i = 0; i < payload_length; i++) {
+      unsigned char ch = *payload_head++;
+      ch = (ch ^ mask[mask_offset++ & 3]);
+      *out_tail++ = ch;
+    }
+  } else {
+    memcpy(out_tail, payload_data, payload_length);
+    out_tail += payload_length;
+  }
+
+  if (!is_fin && !my->continued_opcode) {
+    my->continued_opcode = opcode;
+  }
+
+  size_t out_length = out_tail - my->out->tail;
+  ws_on_debug(self, "ws.sending_frame", my->out->tail, out_length);
+  ws_status ret = self->send_data(self, my->out->tail, out_length);
+  if (!ret && opcode == OPCODE_CLOSE) {
+    my->sent_close = true;
+  }
+  my->out->tail = out_tail;
+  return ret;
+}
+
+ws_status ws_send_close(ws_t self, ws_close close_code, const char *reason) {
+  size_t length = 2 + (reason ? strlen(reason) : 0);
+  char *data = (char *)calloc(length+1, sizeof(char));
+  if (!data) {
+    return WS_ERROR;
+  }
+  data[0] = ((close_code >> 8) & 0xFF);
+  data[1] = (close_code & 0xFF);
+  if (reason) {
+    strcpy(data+2, reason);
+  }
+  ws_status ret = self->send_frame(self,
+      true, OPCODE_CLOSE, false,
+      data, length);
+  free(data);
+  return ret;
+}
+
+
+//
+// RECV
+//
+
+ws_status ws_read_http_request(ws_t self) {
+  ws_private_t my = self->private_state;
+  const char *in_head = my->in->in_head;
+  size_t in_length = my->in->in_tail - in_head;
+
+  char *line_end = strnstr(in_head, "\r\n", in_length);
+  if (!line_end) {
+    return self->on_error(self, "Missing \\r\\n");
+  }
+
+  char *trio[3];
+  size_t i;
+  for (i = 0; i < 3; i++) {
+    while (in_head < line_end && *in_head == ' ') {
+      in_head++;
+    }
+    const char *s = in_head;
+    while (in_head < line_end && *in_head != ' ') {
+      in_head++;
+    }
+    trio[i] = (s < in_head ? strndup(s, in_head - s) : NULL);
+  }
+  my->method = trio[0];
