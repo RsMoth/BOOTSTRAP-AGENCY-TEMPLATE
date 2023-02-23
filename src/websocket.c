@@ -397,3 +397,98 @@ ws_status ws_read_http_request(ws_t self) {
     trio[i] = (s < in_head ? strndup(s, in_head - s) : NULL);
   }
   my->method = trio[0];
+  my->resource = trio[1];
+  my->http_version = trio[2];
+
+  // Keep the request tail '\r\n', in case our client doesn't send
+  // any headers, so ws_recv_headers can simply check for "\r\n\r\n".
+  my->in->in_head = line_end;
+  if (!my->http_version) {
+    return self->on_error(self, "Invalid HTTP header");
+  }
+  return WS_SUCCESS;
+}
+
+ws_status ws_read_http_header(ws_t self,
+    char **to_key, char **to_val) {
+  ws_private_t my = self->private_state;
+  const char *in_head = my->in->in_head;
+  size_t in_length = my->in->in_tail - in_head;
+
+  *to_key = NULL;
+  *to_val = NULL;
+  char *line_end = strnstr(in_head, "\r\n", in_length);
+  if (!line_end) {
+    return self->on_error(self, "Missing \\r\\n");
+  }
+  if (in_head < line_end) {
+    const char *k_start = in_head;
+    if (*k_start == ' ') {
+      return self->on_error(self, "TODO header continuation");
+    }
+    const char *k_end = k_start;
+    while (++k_end < line_end && *k_end != ':') {
+    }
+    const char *v_start = k_end;
+    while (++v_start < line_end && *v_start == ' ') {
+    }
+    const char *v_end = line_end;
+    while (v_end > v_start && v_end[-1] == ' ') {
+      v_end--;
+    }
+    *to_key = strndup(k_start, k_end - k_start);
+    *to_val = strndup(v_start, v_end - v_start);
+  }
+  my->in->in_head = line_end + 2;
+  return WS_SUCCESS;
+}
+
+ws_status ws_read_headers(ws_t self) {
+  ws_private_t my = self->private_state;
+
+  bool is_connection = false;
+  bool is_upgrade = false;
+  while (1) {
+    char *key;
+    char *val;
+    if (ws_read_http_header(self, &key, &val) || !key) {
+      break;
+    }
+    if (!strcasecmp(key, "Connection")) {
+      // firefox uses "keep-alive, Upgrade"
+      is_connection = (strcasestr(val, "Upgrade") ? 1 : 0);
+    } else if (!strcasecmp(key, "Upgrade")) {
+      is_upgrade = !strcasecmp(val, "WebSocket");
+    } else if (!strcasecmp(key, "Sec-WebSocket-Protocol")) {
+      free(my->protocol);
+      my->protocol = strdup(val);
+    } else if (!strcasecmp(key, "Sec-WebSocket-Version")) {
+      my->version = strtol(val, NULL, 0);
+    } else if (!strcasecmp(key, "Sec-WebSocket-Key")) {
+      free(my->sec_key);
+      my->sec_key = strdup(val);
+    } else if (!strcasecmp(key, "Host")) {
+      free(my->req_host);
+      char *p = strrchr(val, ':');
+      if (p) {
+        *p = 0;
+      }
+      my->req_host = strdup(val);
+    }
+    free(key);
+    free(val);
+  }
+
+  my->is_websocket = (is_connection && is_upgrade && my->sec_key);
+  return WS_SUCCESS;
+}
+
+ws_status ws_read_frame_length(ws_t self) {
+  ws_private_t my = self->private_state;
+  const char *in_head = my->in->in_head;
+  size_t in_length = my->in->in_tail - in_head;
+
+  my->needed_length = 0;
+  my->frame_length = 0;
+
+  if (in_length < 2) {
