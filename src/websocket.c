@@ -675,3 +675,105 @@ ws_state ws_recv_headers(ws_t self) {
 
   if (ws_read_headers(self)) {
     return STATE_ERROR;
+  }
+
+  bool keep_alive = false;
+  if (self->on_http_request(self, my->method, my->resource,
+        my->http_version, my->req_host, in_head, my->in->head - in_head,
+        my->is_websocket, &keep_alive)) {
+    return STATE_ERROR;
+  }
+  if (!my->is_websocket) {
+    // keep-alive assumes no content-length!
+    return (keep_alive ? STATE_READ_HTTP_REQUEST : STATE_CLOSED);
+  }
+
+  if (self->on_upgrade(self,
+        my->resource, my->protocol,
+        my->version, my->sec_key)) {
+    return STATE_ERROR;
+  }
+
+  return STATE_READ_FRAME_LENGTH;
+}
+
+ws_state ws_recv_frame_length(ws_t self) {
+  ws_private_t my = self->private_state;
+
+  if (ws_read_frame_length(self)) {
+    return STATE_ERROR;
+  }
+  if (my->needed_length || !my->frame_length) {
+    return -1;
+  }
+  return STATE_READ_FRAME;
+}
+
+ws_state ws_recv_frame(ws_t self) {
+  ws_private_t my = self->private_state;
+
+  if (my->needed_length || !my->frame_length ||
+      my->in->in_tail - my->in->in_head < my->frame_length) {
+    return -1;
+  }
+
+  bool is_fin;
+  uint8_t opcode;
+  bool is_masking;
+  if (ws_read_frame(self, &is_fin, &opcode, &is_masking)) {
+    return STATE_ERROR;
+  }
+
+  bool should_keep = 1;
+  if (self->on_frame(self, is_fin, opcode, is_masking,
+        my->data->begin, my->data->tail - my->data->begin,
+        &should_keep)) {
+    return STATE_ERROR;
+  }
+  if (is_fin || !should_keep) {
+    cb_clear(my->data);
+  }
+
+  if (is_fin) {
+    my->continued_opcode = 0;
+  } else if (opcode != OPCODE_CONTINUATION) {
+    my->continued_opcode = opcode;
+  }
+
+  if (opcode == OPCODE_CLOSE) {
+    return STATE_CLOSED;
+  }
+  return STATE_READ_FRAME_LENGTH;
+}
+
+ws_status ws_recv_loop(ws_t self) {
+  ws_private_t my = self->private_state;
+  while (1) {
+    ws_state new_state;
+    switch (my->state) {
+      case STATE_READ_HTTP_REQUEST:
+        new_state = ws_recv_request(self);
+        break;
+
+      case STATE_READ_HTTP_HEADERS:
+        new_state = ws_recv_headers(self);
+        break;
+
+      case STATE_KEEP_ALIVE:
+        // discard non-ws content
+        my->in->in_tail = my->in->in_head;
+        new_state = -1;
+        break;
+
+      case STATE_READ_FRAME_LENGTH:
+        new_state = ws_recv_frame_length(self);
+        break;
+
+      case STATE_READ_FRAME:
+        new_state = ws_recv_frame(self);
+        break;
+
+      case STATE_CLOSED:
+      case STATE_ERROR:
+      default:
+        return WS_ERROR;
