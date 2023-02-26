@@ -587,3 +587,91 @@ ws_status ws_read_frame(ws_t self,
     payload_length = frame_length - (2 + (is_masking ? 4 : 0) + payload_n);
     in_head += payload_n;
   }
+
+  // the "on_frame" callback will assert (is_masking == is_client)
+  size_t i;
+  unsigned char mask[4];
+  if (is_masking) {
+    is_masking = false;
+    for (i = 0; i < 4; i++) {
+      if (*in_head) {
+        is_masking = true;
+      }
+      mask[i] = *in_head++;
+    }
+  }
+
+  if (cb_ensure_capacity(my->data, payload_length)) {
+    return self->on_error(self,
+        "Payload %zd exceeds buffer capacity", payload_length);
+  }
+  char *data_tail = my->data->tail;
+
+  // no extension, so no extension data
+
+  if (is_masking) {
+    uint32_t mask_offset = 0;
+    for (i = 0; i < payload_length; i++) {
+      unsigned char ch = *in_head++;
+      ch = (ch ^ mask[mask_offset++ & 3]);
+      *data_tail++ = ch;
+    }
+  } else {
+    memcpy(data_tail, in_head, payload_length);
+    data_tail += payload_length;
+  }
+  my->in->in_head = in_head;
+
+  bool is_utf8 = (opcode2 == OPCODE_TEXT ? true : false);
+  if (is_utf8) {
+    unsigned int utf8_state = UTF8_VALID;
+    char *dt = my->data->tail;
+    for (i = 0; i < payload_length; i++) {
+      unsigned char ch = *dt++;
+      utf8_state = validate_utf8[utf8_state + ch];
+      if (utf8_state == UTF8_INVALID) {
+        return self->on_error(self,
+            "Invalid %sUTF8 character 0x%x at %zd",
+            (is_masking ? "masked " :""), ch,
+            dt-1 - my->data->tail);
+      }
+    }
+  }
+
+  *to_is_fin = is_fin;
+  *to_opcode = opcode2;
+  *to_is_masking = is_masking;
+  my->data->tail = data_tail;
+  return WS_SUCCESS;
+}
+
+
+ws_state ws_recv_request(ws_t self) {
+  ws_private_t my = self->private_state;
+  const char *in_head = my->in->in_head;
+  size_t in_length = my->in->in_tail - in_head;
+
+  if (!strnstr(in_head, "\r\n", in_length)) {
+    // still waiting for header
+    return -1;
+  }
+
+  if (ws_read_http_request(self)) {
+    return STATE_ERROR;
+  }
+
+  return STATE_READ_HTTP_HEADERS;
+}
+
+ws_state ws_recv_headers(ws_t self) {
+  ws_private_t my = self->private_state;
+  const char *in_head = my->in->in_head;
+  size_t in_length = my->in->in_tail - in_head;
+
+  if (!strnstr(in_head, "\r\n\r\n", in_length)) {
+    return -1;
+  }
+  my->in->in_head += 2; // skip the request tail
+
+  if (ws_read_headers(self)) {
+    return STATE_ERROR;
