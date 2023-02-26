@@ -492,3 +492,98 @@ ws_status ws_read_frame_length(ws_t self) {
   my->frame_length = 0;
 
   if (in_length < 2) {
+    my->needed_length = 2;
+    return WS_SUCCESS;
+  }
+
+  bool is_fin = ((*in_head & 0x80) ? true : false);
+  uint8_t reserved_flags = (*in_head & 0x70);
+  uint8_t opcode = (*in_head & 0x0F);
+  bool is_control = (opcode >= OPCODE_CLOSE ? true : false);
+
+  // error check
+  if (reserved_flags) {
+    return self->on_error(self, "Reserved flags 0x%x in 0x%x",
+        reserved_flags, *in_head);
+  }
+  if (opcode != OPCODE_CONTINUATION && opcode != OPCODE_TEXT &&
+      opcode != OPCODE_BINARY && opcode != OPCODE_CLOSE &&
+      opcode != OPCODE_PING && opcode != OPCODE_PONG) {
+    return self->on_error(self, "Unknown opcode 0x%x in 0x%x",
+        opcode, *in_head);
+  }
+  if (is_control && !is_fin) {
+    return self->on_error(self, "Control 0x%x not fin", opcode);
+  }
+  if (opcode == OPCODE_CONTINUATION) {
+    if (!my->continued_opcode) {
+      return self->on_error(self, "Continue but prev was fin");
+    }
+  } else if (!is_control && my->continued_opcode) {
+    return self->on_error(self,
+        "Expecting continue (of 0x%x), not 0x%x",
+        my->continued_opcode, opcode);
+  }
+  in_head++;
+
+  bool is_masking = ((*in_head & 0x80) ? true : false);
+  size_t payload_length = (*in_head & 0x7f);
+  if (is_control && payload_length > 125) {
+    return self->on_error(self,
+        "Control 0x%x payload_length %zd > 125",
+        opcode, payload_length);
+  }
+  in_head++;
+
+  uint8_t payload_n = (payload_length < 126 ? 0 :
+      payload_length < 127 ? 2 : 8);
+  if (in_length < 2 + payload_n) {
+    my->needed_length = 2 + payload_n;
+    return WS_SUCCESS;
+  }
+  if (payload_n > 0) {
+    uint8_t j;
+    payload_length = 0;
+    for (j = 0; j < payload_n; j++) {
+      payload_length <<= 8;
+      payload_length |= (unsigned char)*in_head++;
+    }
+  }
+  my->frame_length = 2 + payload_n + (is_masking ? 4 : 0) + payload_length;
+
+  // don't advance my->in->in_head yet
+  return WS_SUCCESS;
+}
+
+ws_status ws_read_frame(ws_t self,
+    bool *to_is_fin, uint8_t *to_opcode, bool *to_is_masking) {
+  ws_private_t my = self->private_state;
+  const char *in_head = my->in->in_head;
+  size_t in_length = my->in->in_tail - in_head;
+  ws_on_debug(self, "ws.recv_frame", in_head, in_length);
+
+  size_t frame_length = my->frame_length;
+  if (my->needed_length || !frame_length || in_length < frame_length) {
+    return self->on_error(self, "Invalid partial frame");
+  }
+
+  // the above "ws_read_frame_length" checks the opcode,
+  // control flags, etc, so we won't repeat that here.
+
+  bool is_fin = ((*in_head & 0x80) ? true : false);
+  uint8_t opcode = (*in_head & 0x0F);
+  //bool is_control = (opcode >= OPCODE_CLOSE ? true : false);
+
+  bool is_continue = (opcode == OPCODE_CONTINUATION ? true : false);
+  uint8_t opcode2 = (is_continue ? my->continued_opcode : opcode);
+  in_head++;
+
+  bool is_masking = ((*in_head & 0x80) ? true : false);
+  size_t payload_length = (*in_head & 0x7f);
+  in_head++;
+
+  int payload_n = (payload_length < 126 ? 0 : payload_length < 127 ? 2 : 8);
+  if (payload_n > 0) {
+    payload_length = frame_length - (2 + (is_masking ? 4 : 0) + payload_n);
+    in_head += payload_n;
+  }
