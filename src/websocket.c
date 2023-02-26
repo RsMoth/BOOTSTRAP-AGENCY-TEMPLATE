@@ -777,3 +777,95 @@ ws_status ws_recv_loop(ws_t self) {
       case STATE_ERROR:
       default:
         return WS_ERROR;
+    }
+    if (new_state < 0) {
+      return WS_SUCCESS;
+    }
+    my->state = new_state;
+    if (new_state == STATE_CLOSED || new_state == STATE_ERROR) {
+      return WS_ERROR;
+    }
+    if (my->in->in_tail == my->in->in_head) {
+      return WS_SUCCESS;
+    }
+  }
+}
+
+ws_status ws_on_recv(ws_t self, const char *buf, ssize_t length) {
+  ws_private_t my = self->private_state;
+  if (length < 0) {
+    return WS_ERROR;
+  } else if (length == 0) {
+    return WS_SUCCESS;
+  }
+  ws_on_debug(self, "ws.recv", buf, length);
+  if (cb_begin_input(my->in, buf, length)) {
+    return self->on_error(self, "begin_input buffer error");
+  }
+  ws_status ret = ws_recv_loop(self);
+  if (cb_end_input(my->in)) {
+    return self->on_error(self, "end_input buffer error");
+  }
+  return ret;
+}
+
+
+//
+// STRUCTS
+//
+
+ws_private_t ws_private_new() {
+  ws_private_t my = (ws_private_t)malloc(sizeof(struct ws_private));
+  if (my) {
+    memset(my, 0, sizeof(struct ws_private));
+    my->in = cb_new();
+    my->out = cb_new();
+    my->data = cb_new();
+    my->state = STATE_READ_HTTP_REQUEST;
+  }
+  return my;
+}
+void ws_private_free(ws_private_t my) {
+  if (my) {
+    cb_free(my->in);
+    cb_free(my->out);
+    cb_free(my->data);
+    free(my->method);
+    free(my->resource);
+    free(my->http_version);
+    free(my->protocol);
+    free(my->sec_key);
+    free(my->sec_answer);
+    free(my->req_host);
+    memset(my, 0, sizeof(struct ws_private));
+    free(my);
+  }
+}
+
+ws_t ws_new() {
+  ws_private_t my = ws_private_new();
+  if (!my) {
+    return NULL;
+  }
+  ws_t self = (ws_t)malloc(sizeof(struct ws_struct));
+  if (!self) {
+    ws_private_free(my);
+    return NULL;
+  }
+  memset(self, 0, sizeof(struct ws_struct));
+  self->send_connect = ws_send_connect;
+  self->send_upgrade = ws_send_upgrade;
+  self->send_frame = ws_send_frame;
+  self->send_close = ws_send_close;
+  self->on_recv = ws_on_recv;
+  self->on_error = ws_on_error;
+  self->private_state = my;
+  return self;
+}
+void ws_free(ws_t self) {
+  if (self) {
+    ws_private_free(self->private_state);
+    memset(self, 0, sizeof(struct ws_struct));
+    free(self);
+  }
+}
